@@ -37,14 +37,6 @@ class HospitalSimulator:
             'SSU': Ward(name="SSU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator)
         }
 
-        # Store initial state
-        # self.simulation_chunks.append(
-        #     HospitalState(
-        #         current_time=self.start_time,
-        #         wards_dict=self.wards_dict,
-        #         ed=self.ed
-        #     )
-        # )
 
         self.patient_generator.id_counter = 0  # reset id counter
 
@@ -105,16 +97,14 @@ class HospitalSimulator:
     def run_simulation_step(self, current_time):
         # Process ED patients and get transitions
         print(f"Current time: {current_time}")
-        for patient in self.ed.patients:  # temp code for testing
-            if patient.id == 1001: 
-                patient.requires_inpatient_care = False
+        # for patient in self.ed.patients:  # temp code for testing
+        #     if patient.id == 1001: 
+        #         patient.requires_inpatient_care = False
                 # patient.ED_exit_time = self.start_time + datetime.timedelta(minutes=30)
 
 
         # patients_going_home, patients_needing_inpatient = self.ed.process_patients(current_time)
         ed_patients, patients_wanting_to_be_admitted_to = self.ed.process_patients(current_time)
-        patient = self.get_patient_from_id(1001)
-        print(patient)
 
         for ward_name in patients_wanting_to_be_admitted_to:
 
@@ -152,6 +142,7 @@ class HospitalSimulator:
                 for patient in triage_dict[key]:
                     available_beds = ward_obj.capacity - ward_obj.occupied_beds
                     if available_beds > 0:
+                        patient.destination_loc = 'HOME'
                         ward_obj.add_patient(patient)
                         self.ed.remove_patient(patient)
                         print('!!!!!!!!!!!!! added patient', patient.id, 'to', ward_name)
