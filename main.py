@@ -119,11 +119,13 @@ def app_factory():
 
     app.state.ed_to_inpatient_predictor = EDToInpatientPredictor()
 
+    start_time="2025-09-21 17:00:00"
+
     total_sim_hours = 1
     sim_time_step_minutes = 10
 
     app.state.hospital_simulator = HospitalSimulator(
-        total_sim_hours, sim_time_step_minutes
+        total_sim_hours, sim_time_step_minutes, start_time=start_time
     )
 
     @app.get("/api/dashboard")

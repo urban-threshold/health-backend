@@ -1,7 +1,7 @@
 from utils.ward import Ward
 from utils.patient import PatientGenerator, Patient
 import datetime
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 
 class HospitalState:
     def __init__(self, current_time, wards_dict, ed):
@@ -10,9 +10,18 @@ class HospitalState:
         self.ed = ed
 
 class HospitalSimulator:
-    def __init__(self, total_sim_hours, sim_time_step_minutes):
-        self.start_time = datetime.datetime.now()
-        self.end_time = datetime.datetime.now() + datetime.timedelta(hours=total_sim_hours)
+    def __init__(self, total_sim_hours: int, sim_time_step_minutes: int, 
+                 start_time: Union[datetime.datetime, str, None] = None):
+
+        # Set start time
+        if start_time is None:
+            self.start_time = datetime.datetime.now()
+        elif isinstance(start_time, str):
+            self.start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+        else:
+            self.start_time = start_time
+
+        self.end_time = self.start_time + datetime.timedelta(hours=total_sim_hours)
         self.time_step = datetime.timedelta(minutes=sim_time_step_minutes)
         self.simulation_chunks = []
         self.patient_generator = PatientGenerator()
@@ -36,14 +45,11 @@ class HospitalSimulator:
             )
         )
 
-        self.patient_generator.id_counter = 0 # reset id counter
-
-        self.run_simulation()
+        self.patient_generator.id_counter = 0  # reset id counter
 
     def create_ed_patient_from_app(self, patient_from_app, requires_inpatient_care):
         new_patient = self.patient_generator.create_ed_patient_from_app(patient_from_app, requires_inpatient_care)
         self.ed.add_patient(new_patient)
-
         return new_patient
 
     def get_patient_from_id(self, patient_id: int) -> Optional[Patient]:
@@ -94,7 +100,7 @@ class HospitalSimulator:
     def run_simulation_step(self, current_time):
         # Process ED patients and get transitions
         print(f"Current time: {current_time}")
-        for patient in self.ed.patients: # temp code for testing
+        for patient in self.ed.patients:  # temp code for testing
             if patient.id == 1: patient.requires_inpatient_care = True
 
         patients_going_home, patients_needing_inpatient = self.ed.process_patients(current_time)
@@ -105,7 +111,6 @@ class HospitalSimulator:
         for patient in patients_needing_inpatient:
             if patient.id == 1: print(patient.name, "needing inpatient", current_time, patient.ED_arrival_time, patient.ED_exit_time)
 
-        
         # Handle patients going to inpatient care
         for patient in patients_needing_inpatient:
             success = self.assign_patient_to_ward(patient)
@@ -119,4 +124,10 @@ class HospitalSimulator:
 
 
 if __name__ == "__main__":
-    hospital_simulator = HospitalSimulator(1, 10)  # 1 hour simulation with 10-minute steps
+    # Example with specific start time
+    start_time = "2024-01-01 08:00:00"
+    simulator = HospitalSimulator(
+        total_sim_hours=1,
+        sim_time_step_minutes=10,
+        start_time=start_time
+    )
