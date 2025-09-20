@@ -5,9 +5,11 @@ from pydantic import BaseModel
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
-from utils.patient import PatientGenerator
+from utils.patient import PatientGenerator, get_patient_dict
 from utils.ward import Ward
 from utils.simulation_manager import HospitalSimulator
+from utils.triage_levels import get_triage_level
+from utils.ICD import get_category_by_description
 
 class WardStruct(BaseModel):
     name: str
@@ -37,19 +39,26 @@ def event_generator(hospital_simulator):
             # Create ward data dictionary
             wards_data = {}
             for ward_name, ward in chunk.wards_dict.items():
+                patients_formatted = []
+                for patient in ward.patients:
+                    patients_formatted.append(get_patient_dict(patient))
+
                 wards_data[ward_name] = {
                     'name': ward.name,
-                    'patients': ward.patients,
+                    'patients': patients_formatted,
                     'capacity': ward.capacity,
                     'occupied_beds': ward.occupied_beds
                 }
 
             # Create chunk data with ED and wards
+            patients_formatted = []
+            for patient in chunk.ed.patients:
+                patients_formatted.append(get_patient_dict(patient))
             chunk_data = {
                 'current_time': chunk.current_time,
                 'ED': {
                     'name': chunk.ed.name,
-                    'patients': chunk.ed.patients,
+                    'patients': patients_formatted,
                     'capacity': chunk.ed.capacity,
                     'occupied_beds': chunk.ed.occupied_beds
                 },

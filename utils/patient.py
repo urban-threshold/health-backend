@@ -4,11 +4,24 @@ import random
 import datetime
 from .triage_levels import TRIAGE_LEVELS, get_triage_description
 from .ICD import ICD_CATEGORIES
+from .triage_levels import get_triage_level
+from .ICD import get_category_by_description
 
 FIRST_NAMES = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", 
                "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen"]
 LAST_NAMES = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", 
               "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin"]
+
+def get_patient_dict(patient):
+    return{
+        'id': patient.id,
+        'name': patient.name,
+        'sex': patient.sex,
+        'age': patient.age,
+        'triage_level_desc': get_triage_level(patient.triage_level_desc),
+        'ICD_desc': get_category_by_description(patient.ICD_desc)['id'],
+        'requires_inpatient_care': patient.requires_inpatient_care
+    }
 
 @dataclass
 class Patient:
