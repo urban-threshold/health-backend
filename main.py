@@ -1,6 +1,7 @@
 from asyncio import Queue
 import datetime
 import time
+from uuid import UUID, uuid4
 from pydantic import BaseModel
 import uvicorn
 from fastapi import FastAPI
@@ -11,22 +12,38 @@ from utils.simulation_manager import HospitalSimulator
 from utils.triage_levels import get_triage_level
 from utils.ICD import get_category_by_description
 
+
 class WardStruct(BaseModel):
     name: str
     patients: list
     capacity: int
     occupied_beds: int
 
+
 class HospitalStateStruct(BaseModel):
     current_time: datetime.datetime
     ED: WardStruct
     wards: dict[str, WardStruct]
+
 
 class HospitalSimulationStruct(BaseModel):
     start_time: datetime.datetime
     end_time: datetime.datetime
     time_step: datetime.timedelta
     simulation_chunks: list
+
+
+class PatientIncomingModel(BaseModel):
+    age: int
+    icdCode: str
+    name: str
+    sex: str
+    triageLevel: int
+
+
+class PatientOutgoingModel(BaseModel):
+    id: UUID
+
 
 def event_generator(hospital_simulator):
     while True:
@@ -44,10 +61,10 @@ def event_generator(hospital_simulator):
                     patients_formatted.append(get_patient_dict(patient))
 
                 wards_data[ward_name] = {
-                    'name': ward.name,
-                    'patients': patients_formatted,
-                    'capacity': ward.capacity,
-                    'occupied_beds': ward.occupied_beds
+                    "name": ward.name,
+                    "patients": patients_formatted,
+                    "capacity": ward.capacity,
+                    "occupied_beds": ward.occupied_beds,
                 }
 
             # Create chunk data with ED and wards
@@ -55,14 +72,14 @@ def event_generator(hospital_simulator):
             for patient in chunk.ed.patients:
                 patients_formatted.append(get_patient_dict(patient))
             chunk_data = {
-                'current_time': chunk.current_time,
-                'ED': {
-                    'name': chunk.ed.name,
-                    'patients': patients_formatted,
-                    'capacity': chunk.ed.capacity,
-                    'occupied_beds': chunk.ed.occupied_beds
+                "current_time": chunk.current_time,
+                "ED": {
+                    "name": chunk.ed.name,
+                    "patients": patients_formatted,
+                    "capacity": chunk.ed.capacity,
+                    "occupied_beds": chunk.ed.occupied_beds,
                 },
-                'wards': wards_data
+                "wards": wards_data,
             }
             sim_chunks.append(chunk_data)
 
@@ -70,7 +87,7 @@ def event_generator(hospital_simulator):
             start_time=hospital_simulator.start_time,
             end_time=hospital_simulator.end_time,
             time_step=hospital_simulator.time_step,
-            simulation_chunks=sim_chunks
+            simulation_chunks=sim_chunks,
         )
 
         yield new_data.model_dump_json()
@@ -83,11 +100,22 @@ def app_factory():
     total_sim_hours = 1
     sim_time_step_minutes = 10
 
-    app.state.hospital_simulator = HospitalSimulator(total_sim_hours, sim_time_step_minutes)
+    app.state.hospital_simulator = HospitalSimulator(
+        total_sim_hours, sim_time_step_minutes
+    )
 
-    @app.get("/dashboard")
+    @app.get("/api/dashboard")
     async def sse():
-        return StreamingResponse(event_generator(app.state.hospital_simulator), media_type="text/event-stream")
+        return StreamingResponse(
+            event_generator(app.state.hospital_simulator),
+            media_type="text/event-stream",
+        )
+
+    @app.post("/api/patient")
+    async def create_patient(patient: PatientIncomingModel):
+        # TODO: model
+        # TODO: results to simulator
+        return PatientOutgoingModel(id=uuid4())
 
     return app
 
