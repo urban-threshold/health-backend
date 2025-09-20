@@ -9,15 +9,27 @@ def visualize_hospital(hospital_simulator, current_time):
     # ED Visualization (left side)
     ax1.set_title(f'Emergency Department\nTime: {current_time}')
     ed_patients = hospital_simulator.ed.patients
+    ed_capacity = hospital_simulator.ed.capacity
+    
+    # Show all ED beds, including empty ones
+    for i in range(ed_capacity):
+        y = ed_capacity - i  # Stack from bottom to top
+        # Draw empty bed as black line
+        rect = patches.Rectangle((0.1, y-0.8), 0.8, 0.1, facecolor='black', alpha=0.1)
+        ax1.add_patch(rect)
+    
+    # Draw occupied ED beds
     for i, patient in enumerate(ed_patients):
-        y = len(ed_patients) - i  # Stack patients from bottom to top
+        y = ed_capacity - i
         rect = patches.Rectangle((0.1, y-0.8), 0.8, 0.6, facecolor='lightblue')
         ax1.add_patch(rect)
         ax1.text(0.15, y-0.6, f"ID:{patient.id} - {patient.name}", fontsize=9)
         ax1.text(0.15, y-0.4, f"→ {patient.destination_loc}", fontsize=9)
     
+    ax1.text(0.02, ed_capacity + 0.5, f"Beds: {len(ed_patients)}/{ed_capacity}", 
+             fontsize=10, fontweight='bold')
     ax1.set_xlim(0, 1)
-    ax1.set_ylim(0, max(10, len(ed_patients) + 1))
+    ax1.set_ylim(0, max(10, ed_capacity + 1))
     
     # Wards Visualization (right side)
     ax2.set_title('Wards')
@@ -25,18 +37,27 @@ def visualize_hospital(hospital_simulator, current_time):
     colors = {'ICU': 'lightcoral', 'CCU': 'lightgreen', 'AMU': 'lightyellow',
               'SSU': 'lightgray', 'SW': 'lightpink'}
     
-    # Calculate max patients for spacing
-    max_patients = max(len(ward.patients) for ward in hospital_simulator.wards_dict.values())
-    spacing = max(3, max_patients) * 2  # Increased spacing between wards
+    # Calculate spacing based on maximum ward capacity
+    max_capacity = max(ward.capacity for ward in hospital_simulator.wards_dict.values())
+    spacing = max(3, max_capacity) * 2  # Increased spacing between wards
     
     for ward_name, ward in hospital_simulator.wards_dict.items():
         # Draw ward separator and name
         ax2.axhline(y=total_y, color='black', linestyle='-', linewidth=1)
-        ax2.text(0.02, total_y + spacing/2, ward_name, fontsize=12, fontweight='bold')
+        ax2.text(0.02, total_y + spacing/2, f"{ward_name}\nBeds: {len(ward.patients)}/{ward.capacity}", 
+                fontsize=10, fontweight='bold')
         
-        # Draw patients in ward
+        # Draw all beds, including empty ones
+        for i in range(ward.capacity):
+            y_pos = total_y + spacing - (i * 2)
+            # Draw empty bed as black line
+            rect = patches.Rectangle((0.2, y_pos-0.1), 0.6, 0.1, 
+                                  facecolor='black', alpha=0.1)
+            ax2.add_patch(rect)
+        
+        # Draw occupied beds with patients
         for i, patient in enumerate(ward.patients):
-            y_pos = total_y + spacing - (i * 2)  # More space between patients
+            y_pos = total_y + spacing - (i * 2)
             rect = patches.Rectangle((0.2, y_pos-0.4), 0.6, 0.8,
                                   facecolor=colors.get(ward_name, 'lightgray'))
             ax2.add_patch(rect)
@@ -46,14 +67,14 @@ def visualize_hospital(hospital_simulator, current_time):
             dest_text = f"→ {patient.destination_loc}"
             
             # Calculate text position to right-align ID
-            id_x = 0.85 - len(id_text) * 0.01  # Adjust multiplier as needed
+            id_x = 0.85 - len(id_text) * 0.01
             ax2.text(id_x, y_pos-0.15, id_text, fontsize=9)
             ax2.text(0.25, y_pos-0.15, dest_text, fontsize=9)
         
-        total_y += spacing + 2  # Added more padding between wards
+        total_y += spacing + 2
     
     ax2.set_xlim(0, 1)
-    ax2.set_ylim(0, max(total_y, 70))  # Ensure minimum height for visibility
+    ax2.set_ylim(0, max(total_y, 70))
     
     plt.tight_layout()
     plt.show()
