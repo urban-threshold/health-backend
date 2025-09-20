@@ -114,7 +114,7 @@ class PatientGenerator:
         else:
             requires_inpatient_care=random.choice([True, False])
             if requires_inpatient_care:
-                destination_loc='ICU'
+                destination_loc=self.determine_ward_for_patient(icd_desc)
                 ED_exit_time=self.start_time + datetime.timedelta(minutes=30)
             else:
                 destination_loc='HOME'
@@ -140,6 +140,10 @@ class PatientGenerator:
         """Generate a list of random patients"""
         self.patients = [self.generate_patient() for _ in range(num_patients)]
         return self.patients
+
+    def determine_ward_for_patient(self, icd_desc) -> str:
+        """Determine the ward for a patient"""
+        return 'ICU'
 
 
 if __name__ == "__main__":
