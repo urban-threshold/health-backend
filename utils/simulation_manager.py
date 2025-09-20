@@ -1,6 +1,7 @@
 from utils.ward import Ward
-from utils.patient import PatientGenerator
+from utils.patient import PatientGenerator, Patient
 import datetime
+from typing import Optional, Dict
 
 class HospitalState:
     def __init__(self, current_time, wards_dict, ed):
@@ -37,15 +38,36 @@ class HospitalSimulator:
 
         self.run_simulation()
 
-    def get_patient_from_id(self, id):
+    def get_patient_from_id(self, patient_id: int) -> Optional[Patient]:
+        """Find a patient by their ID across all wards and ED"""
+        # Check ED
+        for patient in self.ed.patients:
+            if patient.id == patient_id:
+                return patient
+                
+        # Check all wards
         for ward in self.wards_dict.values():
             for patient in ward.patients:
-                if patient.id == id:
+                if patient.id == patient_id:
                     return patient
-        for patient in self.ed.patients:
-            if patient.id == id:
-                return patient
+        
         return None
+
+    def assign_patient_to_ward(self, patient: Patient) -> bool:
+        """
+        Assign a patient to an appropriate ward based on their condition.
+        Returns True if successfully assigned, False if no capacity available.
+        """
+        # Simple ward assignment logic - can be made more sophisticated
+        priority_order = ['ICU', 'CCU', 'AMU', 'SSU', 'SW']
+        
+        for ward_name in priority_order:
+            ward = self.wards_dict[ward_name]
+            if ward.occupied_beds < ward.capacity:
+                ward.add_patient(patient)
+                return True
+        
+        return False
 
     def run_simulation(self):
         current_time = self.start_time
@@ -62,8 +84,26 @@ class HospitalSimulator:
             )
 
     def run_simulation_step(self, current_time):
-        # Process ED patients
-        self.ed.process_patients(current_time)
+        # Process ED patients and get transitions
+        print(f"Current time: {current_time}")
+        for patient in self.ed.patients: # temp code for testing
+            if patient.id == 1: patient.requires_inpatient_care = True
+
+        patients_going_home, patients_needing_inpatient = self.ed.process_patients(current_time)
+
+        for patient in patients_going_home:
+            if patient.id == 1: print(patient.name, "going home")
+
+        for patient in patients_needing_inpatient:
+            if patient.id == 1: print(patient.name, "needing inpatient", current_time, patient.ED_arrival_time, patient.ED_exit_time)
+
+        
+        # Handle patients going to inpatient care
+        for patient in patients_needing_inpatient:
+            success = self.assign_patient_to_ward(patient)
+            if not success:
+                print(f"Warning: No capacity for inpatient {patient.id} in any ward")
+                # Could implement waiting list or other handling here
         
         # Process each ward's patients
         for ward in self.wards_dict.values():
