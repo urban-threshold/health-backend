@@ -11,6 +11,7 @@ from utils.ward import Ward
 from utils.simulation_manager import HospitalSimulator
 from utils.triage_levels import get_triage_level
 from utils.ICD import get_category_by_description
+from fastapi.middleware.cors import CORSMiddleware
 
 
 class WardStruct(BaseModel):
@@ -97,6 +98,16 @@ def app_factory():
     app = FastAPI(description="Health app API")
     app.state.q = Queue()
 
+    origins = ["http://localhost:3000", "https://mediqc.urbanthreshold.com"]
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     total_sim_hours = 1
     sim_time_step_minutes = 10
 
@@ -116,6 +127,11 @@ def app_factory():
         # TODO: model
         # TODO: results to simulator
         return PatientOutgoingModel(id=uuid4())
+
+    @app.get("/app/patient/{id}")
+    async def get_patient(id: UUID):
+        # TODO: refer to stored model result
+        return {}
 
     return app
 
