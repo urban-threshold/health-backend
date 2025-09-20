@@ -111,6 +111,8 @@ class HospitalSimulator:
         patient = self.get_patient_from_id(1001)
         print(patient)
 
+        
+
 
         # for patient in patients_going_home:
         #     if patient.id == 1: print(patient.name, "going home")

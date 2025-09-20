@@ -65,12 +65,14 @@ class Ward:
         for patient in self.patients:
             if self.is_ed:
                 if not patient.requires_inpatient_care:
-                    # print(patient.name, "going home")
                     if patient.ED_exit_time and current_time > patient.ED_exit_time:
                         self.remove_patient(patient)
-            #     else:
-            #         if patient.IP_exit_time and current_time > patient.IP_exit_time:
-            #             self.remove_patient(patient)
+                # else: # need to go to a ward to be admitted
+                #     # sort patients by priority based on triage level
+                #     self.patients.sort(key=lambda x: x.triage_level_desc)
+
+                #     if patient.IP_exit_time and current_time > patient.IP_exit_time:
+                #         self.remove_patient(patient)
             # else:
             #     if patient.IP_exit_time and current_time > patient.IP_exit_time:
             #         self.remove_patient(patient)
