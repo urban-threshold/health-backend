@@ -17,7 +17,9 @@ class HospitalSimulator:
                  npcs_in_ed: int = 0,
                  npcs_in_wards: int = 10,
                  wards_capacity: int = 10,
-                 ed_capacity: int = 10):
+                 ed_capacity: int = 10,
+                 inpatient_duration_min: int = 10,
+                 inpatient_duration_max: int = 100):
 
         # Set start time
         if start_time is None:
@@ -35,11 +37,11 @@ class HospitalSimulator:
         
         # Initialize all wards
         self.wards_dict = {
-            'ICU': Ward(name="ICU", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator),
-            'AMU': Ward(name="AMU", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator),
-            'CCU': Ward(name="CCU", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator),
-            'SW': Ward(name="SW", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator),
-            'SSU': Ward(name="SSU", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator)
+            'ICU': Ward(name="ICU", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator, inpatient_duration_min=inpatient_duration_min, inpatient_duration_max=inpatient_duration_max),
+            'AMU': Ward(name="AMU", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator, inpatient_duration_min=inpatient_duration_min, inpatient_duration_max=inpatient_duration_max),
+            'CCU': Ward(name="CCU", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator, inpatient_duration_min=inpatient_duration_min, inpatient_duration_max=inpatient_duration_max),
+            'SW': Ward(name="SW", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator, inpatient_duration_min=inpatient_duration_min, inpatient_duration_max=inpatient_duration_max),
+            'SSU': Ward(name="SSU", capacity=wards_capacity, occupied_beds=npcs_in_wards, patient_generator=self.patient_generator, inpatient_duration_min=inpatient_duration_min, inpatient_duration_max=inpatient_duration_max)
         }
 
 

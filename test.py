@@ -91,8 +91,15 @@ def visualize_hospital(hospital_simulator, current_time):
 if __name__ == "__main__":
     # Main simulation setup
     start_time = "2025-09-21 17:00:00"
+    inpatient_duration_min_hrs = 2
+    inpatient_duration_max_hrs = 14
+    inpatient_duration_min = inpatient_duration_min_hrs * 60
+    inpatient_duration_max = inpatient_duration_max_hrs * 60
+
+
     hospital_simulator = HospitalSimulator(1, 10, start_time=start_time, 
-                                            npcs_in_ed=10, npcs_in_wards=10, wards_capacity=10, ed_capacity=10)
+                                            npcs_in_ed=5, npcs_in_wards=10, wards_capacity=10, ed_capacity=10, 
+                                            inpatient_duration_min=inpatient_duration_min, inpatient_duration_max=inpatient_duration_max)
     current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
 
     print('Initial ED patients:', hospital_simulator.ed.patients)
