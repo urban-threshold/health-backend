@@ -1,5 +1,6 @@
 from utils.simulation_manager import HospitalSimulator
 import datetime
+from utils.triage_levels import get_triage_level
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -21,10 +22,16 @@ def visualize_hospital(hospital_simulator, current_time):
     # Draw occupied ED beds
     for i, patient in enumerate(ed_patients):
         y = ed_capacity - i
-        rect = patches.Rectangle((0.1, y-0.8), 0.8, 0.6, facecolor='lightblue')
+        rect = patches.Rectangle((0.1, y-0.8), 0.8, 0.8, facecolor='lightblue')  # Made taller for more text
         ax1.add_patch(rect)
-        ax1.text(0.15, y-0.6, f"ID:{patient.id} - {patient.name}", fontsize=9)
-        ax1.text(0.15, y-0.4, f"→ {patient.destination_loc}", fontsize=9)
+        triage = get_triage_level(patient.triage_level_desc)
+        # Format times without microseconds
+        arrival = patient.ED_arrival_time.strftime("%H:%M:%S")
+        exit_time = patient.ED_exit_time.strftime("%H:%M:%S") if patient.ED_exit_time else "TBD"
+        
+        ax1.text(0.15, y-0.4, f"ID:{patient.id} - {patient.name} (T{triage})", fontsize=9)
+        ax1.text(0.15, y-0.6, f"→ {patient.destination_loc}", fontsize=9)
+        ax1.text(0.15, y-0.75, f"Arrival: {arrival} → Exit: {exit_time}", fontsize=8)
     
     ax1.text(0.02, ed_capacity + 0.5, f"Beds: {len(ed_patients)}/{ed_capacity}", 
              fontsize=10, fontweight='bold')
@@ -62,8 +69,9 @@ def visualize_hospital(hospital_simulator, current_time):
                                   facecolor=colors.get(ward_name, 'lightgray'))
             ax2.add_patch(rect)
             
-            # Patient ID and name on one line, destination on separate line below
-            id_text = f"ID:{patient.id} - {patient.name}"
+            # Add triage level to patient info
+            triage = get_triage_level(patient.triage_level_desc)
+            id_text = f"ID:{patient.id} - {patient.name} (T{triage})"
             dest_text = f"→ {patient.destination_loc}"
             
             # Calculate text position to right-align ID
