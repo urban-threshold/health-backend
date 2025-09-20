@@ -45,6 +45,14 @@ class PatientIncomingModel(BaseModel):
 class PatientOutgoingModel(BaseModel):
     id: UUID
 
+class IndividualPatientModel(BaseModel):
+    id: int
+    name: str
+    sex: str
+    age: int
+    triage_level: int
+    ICD_int: int
+    requires_inpatient_care: bool
 
 def event_generator(hospital_simulator):
     while True:
@@ -128,10 +136,21 @@ def app_factory():
         # TODO: results to simulator
         return PatientOutgoingModel(id=uuid4())
 
-    @app.get("/app/patient/{id}")
-    async def get_patient(id: UUID):
+    @app.get("/api/patient/{id}")
+    async def get_patient(id: int) -> IndividualPatientModel:
         # TODO: refer to stored model result
-        return {}
+        patient = app.state.hospital_simulator.get_patient_from_id(id)
+        patient_model = IndividualPatientModel(
+            id=patient.id,
+            name=patient.name,
+            sex=patient.sex,
+            age=patient.age,
+            triage_level=get_triage_level(patient.triage_level_desc),
+            ICD_int=get_category_by_description(patient.ICD_desc)['id'],
+            requires_inpatient_care=patient.requires_inpatient_care
+        )
+        print(patient_model)
+        return patient_model
 
     return app
 
