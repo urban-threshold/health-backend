@@ -18,14 +18,18 @@ from utils.simulation_manager import HospitalSimulator
 #     ICD_desc: str
 #     # requires_inpatient_care: bool
 
-# class HosptialStateStruct(BaseModel):
-#     current_time: datetime.datetime
-#     ED: Ward
-#     ICU_ward: Ward
-#     AMU_ward: Ward
-#     CCU_ward: Ward
-#     SW_ward: Ward
-#     SSU_ward: Ward
+class WardStruct(BaseModel):
+    name: str
+    patients: list
+
+class HosptialStateStruct(BaseModel):
+    current_time: datetime.datetime
+    ED: WardStruct
+    ICU_ward: WardStruct
+    AMU_ward: WardStruct
+    CCU_ward: WardStruct
+    SW_ward: WardStruct
+    SSU_ward: WardStruct
 
 class HosptialSimulationStruct(BaseModel):
     start_time: datetime.datetime
@@ -44,11 +48,46 @@ def event_generator(hospital_simulator):
         # Simulate some dynamic data generation
         time.sleep(1)  # Delay to simulate event interval
 
+        sim_chunks_raw = hospital_simulator.simulation_chunks
+        sim_chunks = []
+        for chunk in sim_chunks_raw:
+            sim_chunks.append(
+                {
+                    'current_time': chunk.current_time,
+                    'ED': {
+                        'name': chunk.ed.name,
+                        'patients': chunk.ed.patients,
+                        'capacity': chunk.ed.capacity,
+                        'occupied_beds': chunk.ed.occupied_beds
+                    },
+                    'ICU_ward': {
+                        'name': chunk.ICU_ward.name,
+                        'patients': chunk.ICU_ward.patients
+                    },
+                    'AMU_ward': {
+                        'name': chunk.AMU_ward.name,
+                        'patients': chunk.AMU_ward.patients
+                    },
+                    'CCU_ward': {
+                        'name': chunk.CCU_ward.name,
+                        'patients': chunk.CCU_ward.patients
+                    },
+                    'SW_ward': {
+                        'name': chunk.SW_ward.name,
+                        'patients': chunk.SW_ward.patients
+                    },
+                    'SSU_ward': {
+                        'name': chunk.SSU_ward.name,
+                        'patients': chunk.SSU_ward.patients
+                    }
+                }
+                )
+
         new_data = HosptialSimulationStruct(
             start_time=hospital_simulator.start_time,
             end_time=hospital_simulator.end_time,
             time_step=hospital_simulator.time_step,
-            simulation_chunks=hospital_simulator.simulation_chunks
+            simulation_chunks=sim_chunks
         )
 
         yield new_data.model_dump_json()
