@@ -1,7 +1,8 @@
-from utils.ward import Ward
+from utils.ward import Ward, ED
 from utils.patient import PatientGenerator, Patient
 import datetime
 from typing import Optional, Dict, Union
+from utils.triage_levels import get_triage_level
 
 class HospitalState:
     def __init__(self, current_time, wards_dict, ed):
@@ -25,7 +26,7 @@ class HospitalSimulator:
         self.time_step = datetime.timedelta(minutes=sim_time_step_minutes)
         self.simulation_chunks = []
         self.patient_generator = PatientGenerator(self.start_time)
-        self.ed = Ward(name="ED", capacity=10, occupied_beds=5, patient_generator=self.patient_generator, is_ed=True)
+        self.ed = ED(name="ED", capacity=10, occupied_beds=5, patient_generator=self.patient_generator, is_ed=True)
         
         # Initialize all wards
         self.wards_dict = {
@@ -67,6 +68,10 @@ class HospitalSimulator:
         
         return None
 
+
+    def get_ward_from_name(self, ward_name: str) -> Ward:
+        return self.wards_dict[ward_name]
+
     def assign_patient_to_ward(self, patient: Patient) -> bool:
         """
         Assign a patient to an appropriate ward based on their condition.
@@ -107,11 +112,43 @@ class HospitalSimulator:
 
 
         # patients_going_home, patients_needing_inpatient = self.ed.process_patients(current_time)
-        self.ed.process_patients(current_time)
+        ed_patients, patients_wanting_to_be_admitted_to = self.ed.process_patients(current_time)
         patient = self.get_patient_from_id(1001)
         print(patient)
 
-        
+        for ward_name in patients_wanting_to_be_admitted_to:
+
+            ward_obj = self.wards_dict[ward_name]
+            destination_ward_patients = patients_wanting_to_be_admitted_to[ward_name]
+            # create a dict of triage numbers and have a list of each patient that has that triage level
+            triage_dict = {
+                1: [],
+                2: [],
+                3: [],
+                4: [],
+                5: []
+            }
+
+            for patient in destination_ward_patients:
+                if get_triage_level(patient.triage_level_desc) not in triage_dict:
+                    triage_dict[get_triage_level(patient.triage_level_desc)] = []
+                triage_dict[get_triage_level(patient.triage_level_desc)].append(patient)
+
+            # for each triage level, sort based on ED arrival time so that the first patient in the list is the most urgent
+            for triage_level in triage_dict:
+                triage_dict[triage_level].sort(key=lambda x: x.ED_arrival_time)
+
+            print('!!!!!!!!!!!!! triage_dict for', ward_name, triage_dict)
+            print()
+            print()
+
+            # check how many beds are available in the ward
+            available_beds = ward_obj.capacity - ward_obj.occupied_beds
+            print('!!!!!!!!!!!!! available_beds for', ward_name, available_beds)
+            print()
+            print()
+
+
 
 
         # for patient in patients_going_home:
