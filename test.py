@@ -87,17 +87,19 @@ def visualize_hospital(hospital_simulator, current_time):
     plt.tight_layout()
     plt.show()
 
-# Main simulation setup
-start_time = "2025-09-21 17:00:00"
-hospital_simulator = HospitalSimulator(1, 10, start_time=start_time)
-current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
 
-print('Initial ED patients:', hospital_simulator.ed.patients)
-print('Press q to close plot and advance to next time step')
+if __name__ == "__main__":
+    # Main simulation setup
+    start_time = "2025-09-21 17:00:00"
+    hospital_simulator = HospitalSimulator(1, 10, start_time=start_time)
+    current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
 
-while True:
-    print(f'--------------------------------')
-    print(f'Time: {current_time}')
-    hospital_simulator.run_simulation_step(current_time)
-    visualize_hospital(hospital_simulator, current_time)
-    current_time += datetime.timedelta(minutes=10)
+    print('Initial ED patients:', hospital_simulator.ed.patients)
+    print('Press q to close plot and advance to next time step')
+
+    while True:
+        print(f'--------------------------------')
+        print(f'Time: {current_time}')
+        hospital_simulator.run_simulation_step(current_time)
+        visualize_hospital(hospital_simulator, current_time)
+        current_time += datetime.timedelta(minutes=10)
