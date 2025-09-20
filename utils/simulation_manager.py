@@ -3,9 +3,9 @@ from utils.patient import PatientGenerator
 import datetime
 
 class HospitalState:
-    def __init__(self, current_time, wards, ed):
+    def __init__(self, current_time, wards_dict, ed):
         self.current_time = current_time
-        self.wards = wards
+        self.wards_dict = wards_dict
         self.ed = ed
 
 class HospitalSimulator:
@@ -17,24 +17,20 @@ class HospitalSimulator:
         self.patient_generator = PatientGenerator()
         self.ed = Ward(name="ED", capacity=10, occupied_beds=5, patient_generator=self.patient_generator, is_ed=True)
         
-        self.ICU_ward = Ward(name="ICU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator)
-        self.AMU_ward = Ward(name="AMU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator)
-        self.CCU_ward = Ward(name="CCU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator)
-        self.SW_ward = Ward(name="SW", capacity=10, occupied_beds=8, patient_generator=self.patient_generator)
-        self.SSU_ward = Ward(name="SSU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator)
-        
-        self.wards = [
-            self.ICU_ward,
-            self.AMU_ward,
-            self.CCU_ward,
-            self.SW_ward,
-            self.SSU_ward
-        ]
+        # Initialize all wards
+        self.wards_dict = {
+            'ICU': Ward(name="ICU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator),
+            'AMU': Ward(name="AMU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator),
+            'CCU': Ward(name="CCU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator),
+            'SW': Ward(name="SW", capacity=10, occupied_beds=8, patient_generator=self.patient_generator),
+            'SSU': Ward(name="SSU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator)
+        }
 
+        # Store initial state
         self.simulation_chunks.append(
             HospitalState(
                 current_time=self.start_time,
-                wards=self.wards,
+                wards_dict=self.wards_dict,
                 ed=self.ed
             )
         )
@@ -50,19 +46,19 @@ class HospitalSimulator:
             self.simulation_chunks.append(
                 HospitalState(
                     current_time=current_time,
-                    wards=self.wards,
+                    wards_dict=self.wards_dict,
                     ed=self.ed
                 )
             )
 
     def run_simulation_step(self, current_time):
+        # Process ED patients
         self.ed.process_patients(current_time)
-        for ward in self.wards:
+        
+        # Process each ward's patients
+        for ward in self.wards_dict.values():
             ward.process_patients(current_time)
 
 
 if __name__ == "__main__":
-    hospital_simulator = HospitalSimulator(1, 10)
-
-    # print(hospital_simulator.ed.patients)
-    # print(hospital_simulator.ICU_ward.patients)
+    hospital_simulator = HospitalSimulator(1, 10)  # 1 hour simulation with 10-minute steps
