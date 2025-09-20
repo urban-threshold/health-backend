@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Ward View</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f2f5;
+        }
+        .hospital-layout {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .ward {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .ward-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .ed {
+            grid-column: span 3;
+            background: #e8f5e9;
+        }
+        .patient {
+            margin: 5px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+            border-left: 4px solid #4caf50;
+        }
+        .stats {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .occupancy {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .low { background: #c8e6c9; }
+        .medium { background: #fff3c4; }
+        .high { background: #ffcdd2; }
+    </style>
+</head>
+<body>
+    <div class="hospital-layout">
+        <div class="ward ed">
+            <div class="ward-title">
+                Emergency Department
+                <span class="occupancy" id="ed-occupancy"></span>
+            </div>
+            <div id="ed-patients"></div>
+        </div>
+        
+        <div class="ward">
+            <div class="ward-title">
+                ICU
+                <span class="occupancy" id="icu-occupancy"></span>
+            </div>
+            <div id="icu-patients"></div>
+        </div>
+        
+        <div class="ward">
+            <div class="ward-title">
+                CCU
+                <span class="occupancy" id="ccu-occupancy"></span>
+            </div>
+            <div id="ccu-patients"></div>
+        </div>
+        
+        <div class="ward">
+            <div class="ward-title">
+                AMU
+                <span class="occupancy" id="amu-occupancy"></span>
+            </div>
+            <div id="amu-patients"></div>
+        </div>
+        
+        <div class="ward">
+            <div class="ward-title">
+                SSU
+                <span class="occupancy" id="ssu-occupancy"></span>
+            </div>
+            <div id="ssu-patients"></div>
+        </div>
+        
+        <div class="ward">
+            <div class="ward-title">
+                SW
+                <span class="occupancy" id="sw-occupancy"></span>
+            </div>
+            <div id="sw-patients"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateWard(wardElement, patients, capacity) {
+            const patientsDiv = wardElement.querySelector('[id$="-patients"]');
+            const occupancySpan = wardElement.querySelector('[id$="-occupancy"]');
+            
+            // Clear existing patients
+            patientsDiv.innerHTML = '';
+            
+            // Add each patient
+            patients.forEach(patient => {
+                const patientDiv = document.createElement('div');
+                patientDiv.className = 'patient';
+                patientDiv.innerHTML = `
+                    ${patient.name} (ID: ${patient.id})
+                    <div class="stats">
+                        Age: ${patient.age} | Sex: ${patient.sex} | 
+                        Triage: ${patient.triage_level_desc}
+                    </div>
+                `;
+                patientsDiv.appendChild(patientDiv);
+            });
+
+            // Update occupancy indicator
+            const occupancyRate = (patients.length / capacity) * 100;
+            occupancySpan.textContent = `${patients.length}/${capacity}`;
+            occupancySpan.className = 'occupancy ' + 
+                (occupancyRate < 50 ? 'low' : 
+                 occupancyRate < 80 ? 'medium' : 'high');
+        }
+
+        // Function to fetch and update data
+        async function updateDisplay() {
+            try {
+                const response = await fetch('http://localhost:8000/api/dashboard');
+                const reader = response.body.getReader();
+                
+                while (true) {
+                    const {value, done} = await reader.read();
+                    if (done) break;
+                    
+                    // Parse the SSE data
+                    const data = JSON.parse(new TextDecoder().decode(value));
+                    const latestState = data.simulation_chunks[data.simulation_chunks.length - 1];
+                    
+                    // Update ED
+                    updateWard(
+                        document.querySelector('.ed'),
+                        latestState.ED.patients,
+                        latestState.ED.capacity
+                    );
+                    
+                    // Update other wards
+                    for (const [wardName, wardData] of Object.entries(latestState.wards)) {
+                        const wardElement = document.querySelector(`[id^="${wardName.toLowerCase()}"]`).parentElement;
+                        updateWard(wardElement, wardData.patients, wardData.capacity);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Start updating the display
+        updateDisplay();
+    </script>
+</body>
+</html>

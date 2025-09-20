@@ -1,34 +1,60 @@
 from utils.simulation_manager import HospitalSimulator
-import time
 import datetime
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
-start_time="2025-09-21 17:00:00"
+def visualize_hospital(hospital_simulator, current_time):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+    
+    # ED Visualization (left side)
+    ax1.set_title(f'Emergency Department\nTime: {current_time}')
+    ed_patients = hospital_simulator.ed.patients
+    for i, patient in enumerate(ed_patients):
+        y = len(ed_patients) - i  # Stack patients from bottom to top
+        rect = patches.Rectangle((0.1, y-0.8), 0.8, 0.6, facecolor='lightblue')
+        ax1.add_patch(rect)
+        ax1.text(0.15, y-0.5, f"ID:{patient.id}\n{patient.name[:10]}", fontsize=8)
+    
+    ax1.set_xlim(0, 1)
+    ax1.set_ylim(0, max(10, len(ed_patients) + 1))
+    
+    # Wards Visualization (right side)
+    ax2.set_title('Wards')
+    total_y = 0
+    colors = {'ICU': 'lightcoral', 'CCU': 'lightgreen', 'AMU': 'lightyellow',
+              'SSU': 'lightgray', 'SW': 'lightpink'}
+    
+    for ward_name, ward in hospital_simulator.wards_dict.items():
+        # Draw ward separator
+        ax2.axhline(y=total_y, color='black', linestyle='-', linewidth=0.5)
+        ax2.text(0.05, total_y + 0.5, ward_name, fontsize=10)
+        
+        # Draw patients in ward
+        for i, patient in enumerate(ward.patients):
+            rect = patches.Rectangle((0.2, total_y + i + 0.2), 0.6, 0.6,
+                                  facecolor=colors.get(ward_name, 'lightgray'))
+            ax2.add_patch(rect)
+            ax2.text(0.25, total_y + i + 0.4, f"ID:{patient.id}\n{patient.name[:10]}", fontsize=8)
+        
+        total_y += max(3, len(ward.patients) + 1)  # Space for each ward
+    
+    ax2.set_xlim(0, 1)
+    ax2.set_ylim(0, total_y)
+    
+    plt.tight_layout()
+    plt.show()
+
+# Main simulation setup
+start_time = "2025-09-21 17:00:00"
 hospital_simulator = HospitalSimulator(1, 10, start_time=start_time)
 current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
 
-print('initial ed patients:', hospital_simulator.ed.patients)
+print('Initial ED patients:', hospital_simulator.ed.patients)
+print('Press q to close plot and advance to next time step')
 
 while True:
     print(f'--------------------------------')
+    print(f'Time: {current_time}')
     hospital_simulator.run_simulation_step(current_time)
+    visualize_hospital(hospital_simulator, current_time)
     current_time += datetime.timedelta(minutes=10)
-    time.sleep(1)
-    # print(current_time)
-    # print(hospital_simulator.ed.patients)
-
-
-# print(hospital_simulator.ed.patients)
-# print(hospital_simulator.ICU_ward.patients)
-# print(hospital_simulator.simulation_chunks)
-
-# print("ED patients:")
-# for patient in hospital_simulator.ed.patients:
-#     print(patient.name, patient.id)
-
-# print("ICU patients:")
-# for patient in hospital_simulator.wards_dict['ICU'].patients:
-#     print(patient.name, patient.id)
-
-# for chunk in hospital_simulator.simulation_chunks:
-#     print(hospital_simulator.ed.patients)
-#     print(f"-----------------------")
