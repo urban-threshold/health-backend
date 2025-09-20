@@ -19,12 +19,7 @@ class PatientAdmission(BaseModel):
 
 class HosptialState(BaseModel):
     ed_patients: list
-    # predictedEntryTs: datetime.datetime
-    # patients: list[PatientAdmission]
-    # ward_1: list[PatientAdmission]
-    # ward_2: list[PatientAdmission]
-    # ward_3: list[PatientAdmission]
-    # ward_4: list[PatientAdmission]
+
 
 
 class PateintTiemResponse(BaseModel):
@@ -63,8 +58,7 @@ def app_factory():
     async def receive_admission(p: PatientAdmission) -> PateintTiemResponse:
         # ml_model_result = run_ml(p)
         # update_sim(p, ml_model_result, app.state.q)
-        # return  # PateintTiemResponse(predictedEntryTs=ml_model_result.ts)
-        return PateintTiemResponse(predictedEntryTs=datetime.datetime.now())
+        return  # PateintTiemResponse(predictedEntryTs=ml_model_result.ts)
 
     @app.get("/dashboard")
     async def sse():
