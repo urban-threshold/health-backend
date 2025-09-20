@@ -138,20 +138,21 @@ class HospitalSimulator:
             print()
             print()
 
+            patients_to_remove = []
+
             for key in triage_dict.keys():
                 for patient in triage_dict[key]:
                     available_beds = ward_obj.capacity - ward_obj.occupied_beds
                     if available_beds > 0:
                         patient.destination_loc = 'HOME'
                         ward_obj.add_patient(patient)
-                        self.ed.remove_patient(patient)
+                        patients_to_remove.append(patient)
                         print('!!!!!!!!!!!!! added patient', patient.id, 'to', ward_name)
                         print()
                         print()
 
-
-
-
+            for patient in patients_to_remove:
+                self.ed.remove_patient(patient)
 
 
         # for patient in patients_going_home:

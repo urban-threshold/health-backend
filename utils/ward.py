@@ -147,13 +147,15 @@ class ED:
         for patient in self.patients:
             print(patient.name, 'is in the ED')
 
+        patients_to_remove = []
+
         for patient in self.patients:
             print('CHECKING',patient.name)
 
             if not patient.requires_inpatient_care:
                 if patient.ED_exit_time and current_time > patient.ED_exit_time:
                     print(patient.name, 'going home')
-                    self.remove_patient(patient)
+                    patients_to_remove.append(patient)
                 else:
                     print(patient.name, 'WAITING to go home')
             else: # need to go to a ward to be admitted
@@ -163,6 +165,9 @@ class ED:
                     patients_wanting_to_be_admitted_to[patient.destination_loc].append(patient)
                 else:
                     print(patient.name, 'WAITING to go to', patient.destination_loc)
+
+        for patient in patients_to_remove:
+            self.remove_patient(patient)
 
 
         print('patients_wanting_to_be_admitted_to',patients_wanting_to_be_admitted_to)
