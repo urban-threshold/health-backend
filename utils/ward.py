@@ -29,6 +29,8 @@ class Ward:
                 if patient.IP_exit_time and current_time > patient.IP_exit_time:
                     self.remove_patient(patient)
             else:
+                if patient.id == 1:
+                    print(patient.ED_arrival_time, patient.ED_exit_time, current_time)
                 pass
                 # if patient.ED_exit_time and current_time > patient.ED_exit_time:
                 #     self.remove_patient(patient)

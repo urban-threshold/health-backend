@@ -88,7 +88,7 @@ class PatientGenerator:
                 ICD_desc=icd_desc,
                 requires_inpatient_care=random.choice([True, False]),
                 ED_arrival_time=datetime.datetime.now(),
-                ED_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 100)),
+                ED_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 30)),
                 IP_arrival_time=None,
                 IP_exit_time=None
             )
