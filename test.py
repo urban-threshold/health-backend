@@ -4,7 +4,8 @@ from utils.triage_levels import get_triage_level
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-def visualize_hospital(hospital_simulator, current_time):
+def visualize_hospital(hospital_simulator, current_time, auto_close_time=None):
+    plt.clf()  # Clear any existing plots
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
     
     # ED Visualization (left side)
@@ -85,21 +86,24 @@ def visualize_hospital(hospital_simulator, current_time):
     ax2.set_ylim(0, max(total_y, 70))
     
     plt.tight_layout()
-    plt.show()
+    
+    if auto_close_time:
+        plt.pause(auto_close_time)
+        plt.close(fig)
+    else:
+        plt.show()
 
+# Main simulation setup
+start_time = "2025-09-21 17:00:00"
+hospital_simulator = HospitalSimulator(1, 10, start_time=start_time)
+current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
 
-if __name__ == "__main__":
-    # Main simulation setup
-    start_time = "2025-09-21 17:00:00"
-    hospital_simulator = HospitalSimulator(1, 10, start_time=start_time)
-    current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+print('Initial ED patients:', hospital_simulator.ed.patients)
+print('Press q to close plot and advance to next time step')
 
-    print('Initial ED patients:', hospital_simulator.ed.patients)
-    print('Press q to close plot and advance to next time step')
-
-    while True:
-        print(f'--------------------------------')
-        print(f'Time: {current_time}')
-        hospital_simulator.run_simulation_step(current_time)
-        visualize_hospital(hospital_simulator, current_time)
-        current_time += datetime.timedelta(minutes=10)
+while True:
+    print(f'--------------------------------')
+    print(f'Time: {current_time}')
+    hospital_simulator.run_simulation_step(current_time)
+    visualize_hospital(hospital_simulator, current_time, auto_close_time=1)  # Auto-close after 1 second
+    current_time += datetime.timedelta(minutes=10)
