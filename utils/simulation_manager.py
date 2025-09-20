@@ -37,6 +37,16 @@ class HospitalSimulator:
 
         self.run_simulation()
 
+    def get_patient_from_id(self, id):
+        for ward in self.wards_dict.values():
+            for patient in ward.patients:
+                if patient.id == id:
+                    return patient
+        for patient in self.ed.patients:
+            if patient.id == id:
+                return patient
+        return None
+
     def run_simulation(self):
         current_time = self.start_time
         while current_time < self.end_time:
