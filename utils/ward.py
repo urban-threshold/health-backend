@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Tuple
 from .patient import Patient
-
+from .triage_levels import get_triage_level
 
 class Ward: 
     def __init__(self, name, capacity, occupied_beds, patient_generator, is_ed=False):
@@ -62,23 +62,54 @@ class Ward:
         #         if patient.IP_exit_time and current_time > patient.IP_exit_time:
         #             patients_to_remove.append(patient)
 
+        patients_wanting_to_be_admitted = {# create keys for each ward, init with empty lists
+            "ICU": [],
+            "CCU": [],
+            "AMU": [],
+            "SSU": [],
+            "SW": []
+
+            }
+
         for patient in self.patients:
             if self.is_ed:
                 if not patient.requires_inpatient_care:
                     if patient.ED_exit_time and current_time > patient.ED_exit_time:
                         self.remove_patient(patient)
-                # else: # need to go to a ward to be admitted
-                #     # sort patients by priority based on triage level
-                #     self.patients.sort(key=lambda x: x.triage_level_desc)
+                else: # need to go to a ward to be admitted
+                    # sort patients by priority based on triage level. will need to convert the triage desc to a number
+                    # self.patients.sort(key=lambda x: get_triage_level(x.triage_level_desc))
 
-                #     if patient.IP_exit_time and current_time > patient.IP_exit_time:
-                #         self.remove_patient(patient)
-            # else:
-            #     if patient.IP_exit_time and current_time > patient.IP_exit_time:
-            #         self.remove_patient(patient)
-        
-        # Remove processed patients
-        # for patient in patients_to_remove:
-        #     self.remove_patient(patient)
+                    if patient.ED_exit_time and current_time > patient.ED_exit_time:
+                        patients_wanting_to_be_admitted[patient.destination_loc].append(patient)
+
+        if self.is_ed:
+            print(patients_wanting_to_be_admitted)
+
+
+        # create a dict of triage numbers and have a list of each patient that has that triage level
+                    # triage_dict = {
+                    #     1: [],
+                    #     2: [],
+                    #     3: [],
+                    #     4: [],
+                    #     5: []
+                    # }
+
+                    # for patient in self.patients:
+                    #     if get_triage_level(patient.triage_level_desc) not in triage_dict:
+                    #         triage_dict[get_triage_level(patient.triage_level_desc)] = []
+                    #     triage_dict[get_triage_level(patient.triage_level_desc)].append(patient)
+
+                    # # for each triage level, sort based on ED arrival time so that the first patient in the list is the most urgent
+                    # for triage_level in triage_dict:
+                    #     triage_dict[triage_level].sort(key=lambda x: x.ED_arrival_time)
+
+                    # # patients_ordered
+
+                    # print(triage_dict)
+
+        # for patient in patients_queued_for_admission:
+        #     pass
             
         return self.patients
