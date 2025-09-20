@@ -13,7 +13,9 @@ def visualize_hospital(hospital_simulator, current_time):
         y = len(ed_patients) - i  # Stack patients from bottom to top
         rect = patches.Rectangle((0.1, y-0.8), 0.8, 0.6, facecolor='lightblue')
         ax1.add_patch(rect)
-        ax1.text(0.15, y-0.5, f"ID:{patient.id}\n{patient.name[:10]}", fontsize=8)
+        ax1.text(0.15, y-0.5, 
+                f"ID:{patient.id} - {patient.name[:15]}\n→ {patient.destination_loc}", 
+                fontsize=10)
     
     ax1.set_xlim(0, 1)
     ax1.set_ylim(0, max(10, len(ed_patients) + 1))
@@ -24,19 +26,27 @@ def visualize_hospital(hospital_simulator, current_time):
     colors = {'ICU': 'lightcoral', 'CCU': 'lightgreen', 'AMU': 'lightyellow',
               'SSU': 'lightgray', 'SW': 'lightpink'}
     
+    # Calculate max patients for spacing
+    max_patients = max(len(ward.patients) for ward in hospital_simulator.wards_dict.values())
+    spacing = max(2, max_patients) * 1.5  # Increased spacing between wards
+    
     for ward_name, ward in hospital_simulator.wards_dict.items():
-        # Draw ward separator
-        ax2.axhline(y=total_y, color='black', linestyle='-', linewidth=0.5)
-        ax2.text(0.05, total_y + 0.5, ward_name, fontsize=10)
+        # Draw ward separator and name
+        ax2.axhline(y=total_y, color='black', linestyle='-', linewidth=1)
+        ax2.text(0.02, total_y + spacing/2, ward_name, fontsize=12, fontweight='bold')
         
         # Draw patients in ward
         for i, patient in enumerate(ward.patients):
-            rect = patches.Rectangle((0.2, total_y + i + 0.2), 0.6, 0.6,
+            y_pos = total_y + spacing - (i * 1.2)  # More space between patients
+            rect = patches.Rectangle((0.2, y_pos-0.4), 0.6, 0.8,  # Taller rectangles
                                   facecolor=colors.get(ward_name, 'lightgray'))
             ax2.add_patch(rect)
-            ax2.text(0.25, total_y + i + 0.4, f"ID:{patient.id}\n{patient.name[:10]}", fontsize=8)
+            # Add destination to patient info
+            ax2.text(0.25, y_pos-0.2, 
+                    f"ID:{patient.id} - {patient.name[:15]}\n→ {patient.destination_loc}", 
+                    fontsize=10, fontweight='normal')
         
-        total_y += max(3, len(ward.patients) + 1)  # Space for each ward
+        total_y += spacing + 1  # Added padding between wards
     
     ax2.set_xlim(0, 1)
     ax2.set_ylim(0, total_y)
