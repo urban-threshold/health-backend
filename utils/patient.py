@@ -19,6 +19,10 @@ class Patient:
     triage_level_desc: str
     ICD_desc: str
     requires_inpatient_care: bool
+    ED_arrival_time: datetime.datetime
+    ED_exit_time: Optional[datetime.datetime] = None
+    IP_arrival_time: Optional[datetime.datetime] = None
+    IP_exit_time: Optional[datetime.datetime] = None
 
 
 class PatientGenerator:
@@ -44,15 +48,37 @@ class PatientGenerator:
         icd_category = random.choice(valid_categories)
         icd_desc = ICD_CATEGORIES[icd_category].description
 
-        return Patient(
-            id=self.id_counter,
-            name=self.generate_name(),
-            sex=random.choice(['M', 'F']),
-            age=random.randint(18, 90),
-            triage_level_desc=triage_desc,
-            ICD_desc=icd_desc,
-            requires_inpatient_care=random.choice([True, False]) if not is_inpatient else True
-        )
+        if is_inpatient:
+
+            return Patient(
+                id=self.id_counter,
+                name=self.generate_name(),
+                sex=random.choice(['M', 'F']),
+                age=random.randint(18, 90),
+                triage_level_desc=triage_desc,
+                ICD_desc=icd_desc,
+                requires_inpatient_care= True,
+                ED_arrival_time=None,
+                ED_exit_time=None,
+                IP_arrival_time=datetime.datetime.now(),
+                IP_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 100))
+            )
+
+        else:
+
+            return Patient(
+                id=self.id_counter,
+                name=self.generate_name(),
+                sex=random.choice(['M', 'F']),
+                age=random.randint(18, 90),
+                triage_level_desc=triage_desc,
+                ICD_desc=icd_desc,
+                requires_inpatient_care=random.choice([True, False]),
+                ED_arrival_time=datetime.datetime.now(),
+                ED_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 100)),
+                IP_arrival_time=None,
+                IP_exit_time=None
+            )
 
     def generate_patients(self, num_patients: int = 10) -> List[Patient]:
         """Generate a list of random patients"""

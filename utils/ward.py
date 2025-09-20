@@ -25,5 +25,10 @@ class Ward:
 
     def process_patients(self, current_time):
         for patient in self.patients:
-            if patient.IP_exit_time and current_time > patient.IP_exit_time:
-                self.remove_patient(patient)
+            if not self.is_ed: # normal wards
+                if patient.IP_exit_time and current_time > patient.IP_exit_time:
+                    self.remove_patient(patient)
+            else:
+                pass
+                # if patient.ED_exit_time and current_time > patient.ED_exit_time:
+                #     self.remove_patient(patient)
