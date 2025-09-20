@@ -107,8 +107,8 @@ class PatientGenerator:
                 destination_loc='HOME',
                 ED_arrival_time=None,
                 ED_exit_time=None,
-                IP_arrival_time=datetime.datetime.now(),
-                IP_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 100))
+                IP_arrival_time=self.start_time,
+                IP_exit_time=self.start_time + datetime.timedelta(minutes=random.randint(10, 100))
             )
 
         else:

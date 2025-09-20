@@ -64,21 +64,6 @@ class HospitalSimulator:
     def get_ward_from_name(self, ward_name: str) -> Ward:
         return self.wards_dict[ward_name]
 
-    def assign_patient_to_ward(self, patient: Patient) -> bool:
-        """
-        Assign a patient to an appropriate ward based on their condition.
-        Returns True if successfully assigned, False if no capacity available.
-        """
-        # Simple ward assignment logic - can be made more sophisticated
-        priority_order = ['ICU', 'CCU', 'AMU', 'SSU', 'SW']
-        
-        for ward_name in priority_order:
-            ward = self.wards_dict[ward_name]
-            if ward.occupied_beds < ward.capacity:
-                ward.add_patient(patient)
-                return True
-        
-        return False
 
     def run_simulation(self):
         current_time = self.start_time
@@ -144,7 +129,7 @@ class HospitalSimulator:
                     available_beds = ward_obj.capacity - ward_obj.occupied_beds
                     if available_beds > 0:
                         patient.destination_loc = 'HOME'
-                        ward_obj.add_patient(patient)
+                        ward_obj.add_patient(patient, current_time)
                         patients_to_remove.append(patient)
                         print('!!!!!!!!!!!!! added patient', patient.id, 'to', ward_name)
                         print()
@@ -152,24 +137,6 @@ class HospitalSimulator:
 
             for patient in patients_to_remove:
                 self.ed.remove_patient(patient)
-
-
-        # for patient in patients_going_home:
-        #     if patient.id == 1: print(patient.name, "going home")
-
-        # for patient in patients_needing_inpatient:
-        #     if patient.id == 1: print(patient.name, "needing inpatient", current_time, patient.ED_arrival_time, patient.ED_exit_time)
-
-        # # Handle patients going to inpatient care
-        # for patient in patients_needing_inpatient:
-        #     success = self.assign_patient_to_ward(patient)
-        #     if not success:
-        #         print(f"Warning: No capacity for inpatient {patient.id} in any ward")
-        #         # Could implement waiting list or other handling here
-        
-        # # Process each ward's patients
-        # for ward in self.wards_dict.values():
-        #     ward.process_patients(current_time)
 
 
 if __name__ == "__main__":
