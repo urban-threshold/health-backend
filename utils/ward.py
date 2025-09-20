@@ -25,8 +25,15 @@ class Ward:
 
     def initialize_ward(self):
         """Initialize the ward with patients"""
+        if self.is_ed:
+            current_loc = 'ED'
+            destination_loc = 'ICU'
+        else:
+            current_loc = self.name
+            destination_loc = 'HOME'
+
         for i in range(self.occupied_beds):
-            patient = self.patient_generator.generate_patient(is_inpatient=(not self.is_ed))
+            patient = self.patient_generator.generate_patient(current_loc, destination_loc, is_inpatient=(not self.is_ed))
             self.patients.append(patient)
 
     def process_patients(self, current_time) -> Tuple[List[Patient], List[Patient]]:
@@ -37,26 +44,39 @@ class Ward:
             For ED: Tuple of (patients going home, patients going to inpatient)
             For other wards: Empty lists
         """
-        patients_exiting_to_home = []
-        patients_exiting_to_inpatient = []
+        # patients_exiting_to_home = []
+        # patients_exiting_to_inpatient = []
         
-        # Create a list of patients to remove to avoid modifying list while iterating
-        patients_to_remove = []
+        # # Create a list of patients to remove to avoid modifying list while iterating
+        # patients_to_remove = []
         
+        # for patient in self.patients:
+        #     if self.is_ed:
+        #         if patient.ED_exit_time and current_time > patient.ED_exit_time:
+        #             patients_to_remove.append(patient)
+        #             if patient.requires_inpatient_care:
+        #                 patients_exiting_to_inpatient.append(patient)
+        #             else:
+        #                 patients_exiting_to_home.append(patient)
+        #     else:  # normal wards
+        #         if patient.IP_exit_time and current_time > patient.IP_exit_time:
+        #             patients_to_remove.append(patient)
+
         for patient in self.patients:
             if self.is_ed:
-                if patient.ED_exit_time and current_time > patient.ED_exit_time:
-                    patients_to_remove.append(patient)
-                    if patient.requires_inpatient_care:
-                        patients_exiting_to_inpatient.append(patient)
-                    else:
-                        patients_exiting_to_home.append(patient)
-            else:  # normal wards
-                if patient.IP_exit_time and current_time > patient.IP_exit_time:
-                    patients_to_remove.append(patient)
+                if not patient.requires_inpatient_care:
+                    # print(patient.name, "going home")
+                    if patient.ED_exit_time and current_time > patient.ED_exit_time:
+                        self.remove_patient(patient)
+            #     else:
+            #         if patient.IP_exit_time and current_time > patient.IP_exit_time:
+            #             self.remove_patient(patient)
+            # else:
+            #     if patient.IP_exit_time and current_time > patient.IP_exit_time:
+            #         self.remove_patient(patient)
         
         # Remove processed patients
-        for patient in patients_to_remove:
-            self.remove_patient(patient)
+        # for patient in patients_to_remove:
+        #     self.remove_patient(patient)
             
-        return patients_exiting_to_home, patients_exiting_to_inpatient
+        return self.patients

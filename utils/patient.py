@@ -31,6 +31,8 @@ class Patient:
     triage_level_desc: str
     ICD_desc: str
     requires_inpatient_care: bool
+    current_loc: str
+    destination_loc: str
     ED_arrival_time: datetime.datetime
     ED_exit_time: Optional[datetime.datetime] = None
     IP_arrival_time: Optional[datetime.datetime] = None
@@ -76,7 +78,7 @@ class PatientGenerator:
                 IP_exit_time=None
             )
 
-    def generate_patient(self, is_inpatient=False) -> Patient:
+    def generate_patient(self, current_loc, destination_loc, is_inpatient=False) -> Patient:
         """Generate a random patient arriving at the ED"""
         self.id_counter += 1
         # Generate random triage level (weighted towards less urgent)
@@ -100,6 +102,8 @@ class PatientGenerator:
                 triage_level_desc=triage_desc,
                 ICD_desc=icd_desc,
                 requires_inpatient_care= True,
+                current_loc='ICU',
+                destination_loc='HOME',
                 ED_arrival_time=None,
                 ED_exit_time=None,
                 IP_arrival_time=datetime.datetime.now(),
@@ -107,6 +111,11 @@ class PatientGenerator:
             )
 
         else:
+            requires_inpatient_care=random.choice([True, False])
+            if requires_inpatient_care:
+                destination_loc='ICU'
+            else:
+                destination_loc='HOME'
 
             return Patient(
                 id=self.id_counter,
@@ -115,7 +124,9 @@ class PatientGenerator:
                 age=random.randint(18, 90),
                 triage_level_desc=triage_desc,
                 ICD_desc=icd_desc,
-                requires_inpatient_care=random.choice([True, False]),
+                requires_inpatient_care=requires_inpatient_care,
+                current_loc='ED',
+                destination_loc=destination_loc,
                 ED_arrival_time=datetime.datetime.now(),
                 ED_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 30)),
                 IP_arrival_time=None,
