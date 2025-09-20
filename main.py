@@ -107,6 +107,8 @@ def app_factory():
     app = FastAPI(description="Health app API")
     app.state.q = Queue()
 
+    app.state.simulation_running = False
+
     origins = ["http://localhost:3000", "https://mediqc.urbanthreshold.com"]
 
     app.add_middleware(
@@ -174,6 +176,9 @@ def app_factory():
         print(patient_model, 'patient_model')
         print(f'--------------------------------')
         print(app.state.hospital_simulator.ed.patients, 'hospital_simulator.ed.patients')
+
+        app.state.simulation_running = True
+        
         return patient_model
 
     @app.get("/api/patient/{id}")
