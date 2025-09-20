@@ -138,7 +138,7 @@ def app_factory():
 
         # format the patient to work with the ML model
         icdCode = patient.icdCode
-        print('naughty! assuming format of icdCode')
+        print('kelvin! what is the format of icdCode. have made functions already for all the conversions.')
         primary_diagnosis_ICD10AM_chapter = get_category_by_code(patient.icdCode)['id']
 
         test_patient = {
@@ -149,44 +149,29 @@ def app_factory():
             'mental_health_admission': 0
         }
 
-        print(test_patient)
+        # print(test_patient)
         
         patient_probability = app.state.ed_to_inpatient_predictor.predict(test_patient)
 
-        print(patient_probability, patient, test_patient)
+        # print(patient_probability, patient, test_patient)
 
+        # now create the patient in the simulator
+        new_patient = app.state.hospital_simulator.create_ed_patient_from_app(patient, patient_probability > 0.5)
 
-        # new_patient = Patient(
-        #     id=patient.id,
-        #     name=patient.name,
-        #     sex=patient.sex,
-        #     age=patient.age,
-        #     triage_level_desc=patient.triage_level_desc,
-        #     ICD_desc=patient.ICD_desc,
-        #     requires_inpatient_care=patient_probability > 0.5
-        # )
-        # # TODO: results to simulator
-        # # patient = app.state.hospital_simulator.get_patient_from_id(id)
-        # patient_model = IndividualPatientModel(
-        #     id=patient.id,
-        #     name=patient.name,
-        #     sex=patient.sex,
-        #     age=patient.age,
-        #     triage_level=get_triage_level(patient.triage_level_desc),
-        #     ICD_int=get_category_by_description(patient.ICD_desc)['id'],
-        #     requires_inpatient_care=patient.requires_inpatient_care
-        # )
+        print(new_patient)
 
         patient_model = IndividualPatientModel(
-            id=1,#patient.id,
-            name=patient.name,
-            sex=patient.sex,
-            age=patient.age,
-            triage_level=patient.triageLevel,
-            ICD_int=11,
-            requires_inpatient_care=False
+            id=new_patient.id,
+            name=new_patient.name,
+            sex=new_patient.sex,
+            age=new_patient.age,
+            triage_level=get_triage_level(new_patient.triage_level_desc),
+            ICD_int=get_category_by_description(new_patient.ICD_desc)['id'],
+            requires_inpatient_care=new_patient.requires_inpatient_care
         )
-        # print(patient_model)
+        print(patient_model, 'patient_model')
+        print(f'--------------------------------')
+        print(app.state.hospital_simulator.ed.patients, 'hospital_simulator.ed.patients')
         return patient_model
 
     @app.get("/api/patient/{id}")

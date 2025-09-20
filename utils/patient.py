@@ -4,7 +4,7 @@ import random
 import datetime
 from .ICD import ICD_CATEGORIES
 from .triage_levels import TRIAGE_LEVELS, get_triage_level, get_triage_description
-from .ICD import get_category_by_description
+from .ICD import get_category_by_description, get_category_by_code
 
 FIRST_NAMES = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", 
                "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen"]
@@ -39,27 +39,34 @@ class Patient:
 
 class PatientGenerator:
     def __init__(self) -> None:
-        self.id_counter = 0
+        self.id_counter = 1000
         self.patients = []
 
     def generate_name(self) -> str:
         """Generate a random full name"""
         return f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
 
-    def create_patient(self, patient_from_app, requires_inpatient_care):
+    def create_ed_patient_from_app(self, patient_from_app, requires_inpatient_care):
         self.id_counter += 1
 
         # icd_desc = ICD_CATEGORIES[patient_from_app['primary_diagnosis_ICD10AM_chapter']].description
         # triage_level_desc = get_triage_description(patient_from_app['triage_category'])
 
-        icd_desc = ICD_CATEGORIES[patient_from_app['primary_diagnosis_ICD10AM_chapter']].description
-        triage_level_desc = get_triage_description(patient_from_app['triage_category'])
+        # age: int
+        # icdCode: str
+        # name: str
+        # sex: str
+        # triageLevel: int
+
+        # icd_desc = ICD_CATEGORIES[patient_from_app.icdCode].description
+        icd_desc = get_category_by_code(patient_from_app.icdCode)['description']
+        triage_level_desc = get_triage_description(patient_from_app.triageLevel)
 
         return Patient(
                 id=self.id_counter,
-                name=patient_from_app['name'],
-                sex=patient_from_app['sex'],
-                age=patient_from_app['age'],
+                name=patient_from_app.name,
+                sex=patient_from_app.sex,
+                age=patient_from_app.age,
                 triage_level_desc=triage_level_desc,
                 ICD_desc=icd_desc,
                 requires_inpatient_care=requires_inpatient_care,

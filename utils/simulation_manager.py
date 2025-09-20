@@ -36,7 +36,15 @@ class HospitalSimulator:
             )
         )
 
+        self.patient_generator.id_counter = 0 # reset id counter
+
         self.run_simulation()
+
+    def create_ed_patient_from_app(self, patient_from_app, requires_inpatient_care):
+        new_patient = self.patient_generator.create_ed_patient_from_app(patient_from_app, requires_inpatient_care)
+        self.ed.add_patient(new_patient)
+
+        return new_patient
 
     def get_patient_from_id(self, patient_id: int) -> Optional[Patient]:
         """Find a patient by their ID across all wards and ED"""
