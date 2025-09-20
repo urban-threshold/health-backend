@@ -32,7 +32,7 @@ class HospitalSimulationStruct(BaseModel):
     start_time: datetime.datetime
     end_time: datetime.datetime
     time_step: datetime.timedelta
-    simulation_chunks: list
+    simulation_chunks: list[dict]
 
 
 class PatientIncomingModel(BaseModel):
@@ -46,6 +46,7 @@ class PatientIncomingModel(BaseModel):
 class PatientOutgoingModel(BaseModel):
     id: UUID
 
+
 class IndividualPatientModel(BaseModel):
     id: int
     name: str
@@ -55,52 +56,49 @@ class IndividualPatientModel(BaseModel):
     ICD_int: int
     requires_inpatient_care: bool
 
-def event_generator(hospital_simulator):
-    while True:
-        # Simulate some dynamic data generation
-        time.sleep(1)  # Delay to simulate event interval
 
-        sim_chunks_raw = hospital_simulator.simulation_chunks
-        sim_chunks = []
-        for chunk in sim_chunks_raw:
-            # Create ward data dictionary
-            wards_data = {}
-            for ward_name, ward in chunk.wards_dict.items():
-                patients_formatted = []
-                for patient in ward.patients:
-                    patients_formatted.append(get_patient_dict(patient))
-
-                wards_data[ward_name] = {
-                    "name": ward.name,
-                    "patients": patients_formatted,
-                    "capacity": ward.capacity,
-                    "occupied_beds": ward.occupied_beds,
-                }
-
-            # Create chunk data with ED and wards
+def run_simulation(hospital_simulator) -> HospitalSimulationStruct:
+    sim_chunks_raw = hospital_simulator.simulation_chunks
+    sim_chunks = []
+    for chunk in sim_chunks_raw:
+        # Create ward data dictionary
+        wards_data = {}
+        for ward_name, ward in chunk.wards_dict.items():
             patients_formatted = []
-            for patient in chunk.ed.patients:
+            for patient in ward.patients:
                 patients_formatted.append(get_patient_dict(patient))
-            chunk_data = {
-                "current_time": chunk.current_time,
-                "ED": {
-                    "name": chunk.ed.name,
-                    "patients": patients_formatted,
-                    "capacity": chunk.ed.capacity,
-                    "occupied_beds": chunk.ed.occupied_beds,
-                },
-                "wards": wards_data,
+
+            wards_data[ward_name] = {
+                "name": ward.name,
+                "patients": patients_formatted,
+                "capacity": ward.capacity,
+                "occupied_beds": ward.occupied_beds,
             }
-            sim_chunks.append(chunk_data)
 
-        new_data = HospitalSimulationStruct(
-            start_time=hospital_simulator.start_time,
-            end_time=hospital_simulator.end_time,
-            time_step=hospital_simulator.time_step,
-            simulation_chunks=sim_chunks,
-        )
+        # Create chunk data with ED and wards
+        patients_formatted = []
+        for patient in chunk.ed.patients:
+            patients_formatted.append(get_patient_dict(patient))
+        chunk_data = {
+            "current_time": chunk.current_time,
+            "ED": {
+                "name": chunk.ed.name,
+                "patients": patients_formatted,
+                "capacity": chunk.ed.capacity,
+                "occupied_beds": chunk.ed.occupied_beds,
+            },
+            "wards": wards_data,
+        }
+        sim_chunks.append(chunk_data)
 
-        yield new_data.model_dump_json()
+    new_data = HospitalSimulationStruct(
+        start_time=hospital_simulator.start_time,
+        end_time=hospital_simulator.end_time,
+        time_step=hospital_simulator.time_step,
+        simulation_chunks=sim_chunks,
+    )
+
+    return new_data
 
 
 def app_factory():
@@ -127,36 +125,33 @@ def app_factory():
     )
 
     @app.get("/api/dashboard")
-    async def sse():
-        return StreamingResponse(
-            event_generator(app.state.hospital_simulator),
-            media_type="text/event-stream",
-        )
+    async def update_hospital_sim() -> HospitalSimulationStruct:
+        return run_simulation(app.state.hospital_simulator)
 
     @app.post("/api/patient")
     async def create_patient(patient: PatientIncomingModel):
 
         # format the patient to work with the ML model
-        icdCode = patient.icdCode
-        print('kelvin! what is the format of icdCode. have made functions already for all the conversions.')
-        primary_diagnosis_ICD10AM_chapter = get_category_by_code(patient.icdCode)['id']
+        primary_diagnosis_ICD10AM_chapter = get_category_by_code(patient.icdCode)["id"]
 
         test_patient = {
-            'triage_category': patient.triageLevel,
-            'age': patient.age,
-            'primary_diagnosis_ICD10AM_chapter': primary_diagnosis_ICD10AM_chapter,
-            'affected_by_drugs_and_or_alcohol': 0,
-            'mental_health_admission': 0
+            "triage_category": patient.triageLevel,
+            "age": patient.age,
+            "primary_diagnosis_ICD10AM_chapter": primary_diagnosis_ICD10AM_chapter,
+            "affected_by_drugs_and_or_alcohol": 0,
+            "mental_health_admission": 0,
         }
 
         # print(test_patient)
-        
+
         patient_probability = app.state.ed_to_inpatient_predictor.predict(test_patient)
 
         # print(patient_probability, patient, test_patient)
 
         # now create the patient in the simulator
-        new_patient = app.state.hospital_simulator.create_ed_patient_from_app(patient, patient_probability > 0.5)
+        new_patient = app.state.hospital_simulator.create_ed_patient_from_app(
+            patient, patient_probability > 0.5
+        )
 
         print(new_patient)
 
@@ -166,12 +161,14 @@ def app_factory():
             sex=new_patient.sex,
             age=new_patient.age,
             triage_level=get_triage_level(new_patient.triage_level_desc),
-            ICD_int=get_category_by_description(new_patient.ICD_desc)['id'],
-            requires_inpatient_care=new_patient.requires_inpatient_care
+            ICD_int=get_category_by_description(new_patient.ICD_desc)["id"],
+            requires_inpatient_care=new_patient.requires_inpatient_care,
         )
-        print(patient_model, 'patient_model')
-        print(f'--------------------------------')
-        print(app.state.hospital_simulator.ed.patients, 'hospital_simulator.ed.patients')
+        print(patient_model, "patient_model")
+        print(f"--------------------------------")
+        print(
+            app.state.hospital_simulator.ed.patients, "hospital_simulator.ed.patients"
+        )
         return patient_model
 
     @app.get("/api/patient/{id}")
@@ -184,8 +181,8 @@ def app_factory():
             sex=patient.sex,
             age=patient.age,
             triage_level=get_triage_level(patient.triage_level_desc),
-            ICD_int=get_category_by_description(patient.ICD_desc)['id'],
-            requires_inpatient_care=patient.requires_inpatient_care
+            ICD_int=get_category_by_description(patient.ICD_desc)["id"],
+            requires_inpatient_care=patient.requires_inpatient_care,
         )
         print(patient_model)
         return patient_model
