@@ -38,12 +38,12 @@ class Ward:
 
     def process_patients(self, current_time) -> Tuple[List[Patient], List[Patient]]:
         patients_to_remove = []
-        for patient in self.patients:
-            if patient.IP_exit_time and current_time > patient.IP_exit_time:
-                patients_to_remove.append(patient)
+        # for patient in self.patients:
+        #     if patient.IP_exit_time and current_time > patient.IP_exit_time:
+        #         patients_to_remove.append(patient)
 
-        for patient in patients_to_remove:
-            self.remove_patient(patient)
+        # for patient in patients_to_remove:
+        #     self.remove_patient(patient)
 
             
         return self.patients

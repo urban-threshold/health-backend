@@ -30,7 +30,7 @@ class HospitalSimulator:
         
         # Initialize all wards
         self.wards_dict = {
-            'ICU': Ward(name="ICU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator),
+            'ICU': Ward(name="ICU", capacity=10, occupied_beds=10, patient_generator=self.patient_generator),
             'AMU': Ward(name="AMU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator),
             'CCU': Ward(name="CCU", capacity=10, occupied_beds=8, patient_generator=self.patient_generator),
             'SW': Ward(name="SW", capacity=10, occupied_beds=8, patient_generator=self.patient_generator),
