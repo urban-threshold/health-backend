@@ -97,13 +97,12 @@ class HospitalSimulator:
     def run_simulation_step(self, current_time):
         # Process ED patients and get transitions
         print(f"Current time: {current_time}")
-        # for patient in self.ed.patients:  # temp code for testing
-        #     if patient.id == 1001: 
-        #         patient.requires_inpatient_care = False
-                # patient.ED_exit_time = self.start_time + datetime.timedelta(minutes=30)
+
+        for ward in self.wards_dict.values():
+            ward.process_patients(current_time)
+        
 
 
-        # patients_going_home, patients_needing_inpatient = self.ed.process_patients(current_time)
         ed_patients, patients_wanting_to_be_admitted_to = self.ed.process_patients(current_time)
 
         for ward_name in patients_wanting_to_be_admitted_to:
