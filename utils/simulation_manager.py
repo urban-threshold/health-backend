@@ -24,7 +24,7 @@ class HospitalSimulator:
         self.end_time = self.start_time + datetime.timedelta(hours=total_sim_hours)
         self.time_step = datetime.timedelta(minutes=sim_time_step_minutes)
         self.simulation_chunks = []
-        self.patient_generator = PatientGenerator()
+        self.patient_generator = PatientGenerator(self.start_time)
         self.ed = Ward(name="ED", capacity=10, occupied_beds=5, patient_generator=self.patient_generator, is_ed=True)
         
         # Initialize all wards
@@ -103,7 +103,7 @@ class HospitalSimulator:
         for patient in self.ed.patients:  # temp code for testing
             if patient.id == 1001: 
                 patient.requires_inpatient_care = False
-                patient.ED_exit_time = self.start_time + datetime.timedelta(minutes=30)
+                # patient.ED_exit_time = self.start_time + datetime.timedelta(minutes=30)
 
 
         # patients_going_home, patients_needing_inpatient = self.ed.process_patients(current_time)

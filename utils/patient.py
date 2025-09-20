@@ -40,7 +40,8 @@ class Patient:
 
 
 class PatientGenerator:
-    def __init__(self) -> None:
+    def __init__(self, start_time) -> None:
+        self.start_time = start_time
         self.id_counter = 1000
         self.patients = []
 
@@ -64,7 +65,7 @@ class PatientGenerator:
         icd_desc = get_category_by_code(patient_from_app.icdCode)['description']
         triage_level_desc = get_triage_description(patient_from_app.triageLevel)
 
-        return Patient(
+        return Patient( #TODO
                 id=self.id_counter,
                 name=patient_from_app.name,
                 sex=patient_from_app.sex,
@@ -72,8 +73,8 @@ class PatientGenerator:
                 triage_level_desc=triage_level_desc,
                 ICD_desc=icd_desc,
                 requires_inpatient_care=requires_inpatient_care,
-                ED_arrival_time=datetime.datetime.now(),
-                ED_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 30)),
+                ED_arrival_time=self.start_time,
+                ED_exit_time=self.start_time + datetime.timedelta(minutes=random.randint(10, 30)),
                 IP_arrival_time=None,
                 IP_exit_time=None
             )
@@ -114,8 +115,10 @@ class PatientGenerator:
             requires_inpatient_care=random.choice([True, False])
             if requires_inpatient_care:
                 destination_loc='ICU'
+                ED_exit_time=self.start_time + datetime.timedelta(minutes=30)
             else:
                 destination_loc='HOME'
+                ED_exit_time=self.start_time + datetime.timedelta(minutes=30)
 
             return Patient(
                 id=self.id_counter,
@@ -127,8 +130,8 @@ class PatientGenerator:
                 requires_inpatient_care=requires_inpatient_care,
                 current_loc='ED',
                 destination_loc=destination_loc,
-                ED_arrival_time=datetime.datetime.now(),
-                ED_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 30)),
+                ED_arrival_time=self.start_time,
+                ED_exit_time=ED_exit_time,
                 IP_arrival_time=None,
                 IP_exit_time=None
             )
