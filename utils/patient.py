@@ -2,9 +2,8 @@ from dataclasses import dataclass
 from typing import Optional, List
 import random
 import datetime
-from .triage_levels import TRIAGE_LEVELS, get_triage_description
 from .ICD import ICD_CATEGORIES
-from .triage_levels import get_triage_level
+from .triage_levels import TRIAGE_LEVELS, get_triage_level, get_triage_description
 from .ICD import get_category_by_description
 
 FIRST_NAMES = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", 
@@ -46,6 +45,29 @@ class PatientGenerator:
     def generate_name(self) -> str:
         """Generate a random full name"""
         return f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
+
+    def create_patient(self, patient_from_app, requires_inpatient_care):
+        self.id_counter += 1
+
+        # icd_desc = ICD_CATEGORIES[patient_from_app['primary_diagnosis_ICD10AM_chapter']].description
+        # triage_level_desc = get_triage_description(patient_from_app['triage_category'])
+
+        icd_desc = ICD_CATEGORIES[patient_from_app['primary_diagnosis_ICD10AM_chapter']].description
+        triage_level_desc = get_triage_description(patient_from_app['triage_category'])
+
+        return Patient(
+                id=self.id_counter,
+                name=patient_from_app['name'],
+                sex=patient_from_app['sex'],
+                age=patient_from_app['age'],
+                triage_level_desc=triage_level_desc,
+                ICD_desc=icd_desc,
+                requires_inpatient_care=requires_inpatient_care,
+                ED_arrival_time=datetime.datetime.now(),
+                ED_exit_time=datetime.datetime.now() + datetime.timedelta(minutes=random.randint(10, 30)),
+                IP_arrival_time=None,
+                IP_exit_time=None
+            )
 
     def generate_patient(self, is_inpatient=False) -> Patient:
         """Generate a random patient arriving at the ED"""

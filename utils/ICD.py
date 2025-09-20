@@ -75,3 +75,5 @@ if __name__ == "__main__":
     # Get by description
     print(get_category_by_description("Neoplasms"))  
     # Output: {'id': 2, 'description': 'Neoplasms', 'code': 'C0'}
+
+    # print(ICD_CATEGORIES[1].description)

@@ -6,12 +6,13 @@ from pydantic import BaseModel
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
-from utils.patient import PatientGenerator, get_patient_dict
+from utils.patient import PatientGenerator, get_patient_dict, Patient
 from utils.ward import Ward
 from utils.simulation_manager import HospitalSimulator
 from utils.triage_levels import get_triage_level
-from utils.ICD import get_category_by_description
+from utils.ICD import get_category_by_description, get_category_by_code
 from fastapi.middleware.cors import CORSMiddleware
+from ML_models.ed_to_inpatient_ML import EDToInpatientPredictor
 
 
 class WardStruct(BaseModel):
@@ -116,6 +117,8 @@ def app_factory():
         allow_headers=["*"],
     )
 
+    app.state.ed_to_inpatient_predictor = EDToInpatientPredictor()
+
     total_sim_hours = 1
     sim_time_step_minutes = 10
 
@@ -133,8 +136,63 @@ def app_factory():
     @app.post("/api/patient")
     async def create_patient(patient: PatientIncomingModel):
         # TODO: model
-        # TODO: results to simulator
-        return PatientOutgoingModel(id=uuid4())
+
+        age: int
+        icdCode: str
+        name: str
+        sex: str
+        triageLevel: int
+
+        # format the patient to work with the ML model
+        icdCode = patient.icdCode
+        print('naughty! assuming format of icdCode')
+        primary_diagnosis_ICD10AM_chapter = get_category_by_code(patient.icdCode)['id']
+
+        test_patient = {
+            'triage_category': patient.triageLevel,
+            'age': patient.age,
+            'primary_diagnosis_ICD10AM_chapter': primary_diagnosis_ICD10AM_chapter,
+            'affected_by_drugs_and_or_alcohol': 0,
+            'mental_health_admission': 0
+        }
+        
+        patient_probability = app.state.ed_to_inpatient_predictor.predict(patient)
+
+        print(patient_probability, patient, test_patient)
+
+
+        # new_patient = Patient(
+        #     id=patient.id,
+        #     name=patient.name,
+        #     sex=patient.sex,
+        #     age=patient.age,
+        #     triage_level_desc=patient.triage_level_desc,
+        #     ICD_desc=patient.ICD_desc,
+        #     requires_inpatient_care=patient_probability > 0.5
+        # )
+        # # TODO: results to simulator
+        # # patient = app.state.hospital_simulator.get_patient_from_id(id)
+        # patient_model = IndividualPatientModel(
+        #     id=patient.id,
+        #     name=patient.name,
+        #     sex=patient.sex,
+        #     age=patient.age,
+        #     triage_level=get_triage_level(patient.triage_level_desc),
+        #     ICD_int=get_category_by_description(patient.ICD_desc)['id'],
+        #     requires_inpatient_care=patient.requires_inpatient_care
+        # )
+
+        patient_model = IndividualPatientModel(
+            id=patient.id,
+            name=patient.name,
+            sex=patient.sex,
+            age=patient.age,
+            triage_level='yo',
+            ICD_int=11,
+            requires_inpatient_care=False
+        )
+        # print(patient_model)
+        return patient_model
 
     @app.get("/api/patient/{id}")
     async def get_patient(id: int) -> IndividualPatientModel:
