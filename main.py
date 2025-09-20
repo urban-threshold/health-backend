@@ -135,13 +135,6 @@ def app_factory():
 
     @app.post("/api/patient")
     async def create_patient(patient: PatientIncomingModel):
-        # TODO: model
-
-        age: int
-        icdCode: str
-        name: str
-        sex: str
-        triageLevel: int
 
         # format the patient to work with the ML model
         icdCode = patient.icdCode
@@ -155,8 +148,10 @@ def app_factory():
             'affected_by_drugs_and_or_alcohol': 0,
             'mental_health_admission': 0
         }
+
+        print(test_patient)
         
-        patient_probability = app.state.ed_to_inpatient_predictor.predict(patient)
+        patient_probability = app.state.ed_to_inpatient_predictor.predict(test_patient)
 
         print(patient_probability, patient, test_patient)
 
@@ -183,11 +178,11 @@ def app_factory():
         # )
 
         patient_model = IndividualPatientModel(
-            id=patient.id,
+            id=1,#patient.id,
             name=patient.name,
             sex=patient.sex,
             age=patient.age,
-            triage_level='yo',
+            triage_level=patient.triageLevel,
             ICD_int=11,
             requires_inpatient_care=False
         )

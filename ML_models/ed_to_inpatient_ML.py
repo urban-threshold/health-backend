@@ -46,9 +46,12 @@ class EDToInpatientPredictor:
             })
         """
         # Validate input features
-        missing_features = set(self.features) - set(patient_data.keys())
-        if missing_features:
-            raise ValueError(f"Missing required features: {missing_features}")
+        # missing_features = set(self.features) - set(patient_data.keys())
+        # for feature in self.features:
+        #     print('feature', feature)
+        #     print('patient_data.keys()', patient_data.keys())
+        # if missing_features:
+        #     raise ValueError(f"Missing required features: {missing_features}")
 
         # Create DataFrame with proper column order
         X_new = pd.DataFrame([patient_data], columns=self.features)
