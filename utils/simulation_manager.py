@@ -47,8 +47,8 @@ class HospitalSimulator:
 
         self.patient_generator.id_counter = 0  # reset id counter
 
-    def create_ed_patient_from_app(self, patient_from_app, requires_inpatient_care):
-        new_patient = self.patient_generator.create_ed_patient_from_app(patient_from_app, requires_inpatient_care)
+    def create_ed_patient_from_app(self, patient_from_app, requires_inpatient_care, current_time):
+        new_patient = self.patient_generator.create_ed_patient_from_app(patient_from_app, requires_inpatient_care, current_time)
         self.ed.add_patient(new_patient)
         return new_patient
 
