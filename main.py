@@ -107,7 +107,7 @@ def app_factory():
 
     app.state.simulation_running = False
 
-    origins = ["http://localhost:3000", "https://mediqc.urbanthreshold.com"]
+    origins = ["http://localhost:3000", "https://mediq.urbanthreshold.com"]
 
     app.add_middleware(
         CORSMiddleware,
