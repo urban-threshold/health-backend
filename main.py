@@ -233,7 +233,7 @@ def app_factory():
 
         # now create the patient in the simulator
         new_patient = app.state.hospital_simulator.create_ed_patient_from_app(
-            patient, patient_probability > 0.5
+            patient, patient_probability > 0.5, current_time=datetime.datetime.now()
         )
 
         print(new_patient)
