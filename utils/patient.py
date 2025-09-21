@@ -53,7 +53,7 @@ class PatientGenerator:
         """Generate a random full name"""
         return f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
 
-    def create_ed_patient_from_app(self, patient_from_app, requires_inpatient_care, current_time):
+    def create_ed_patient_from_app(self, patient_from_app, requires_inpatient_care, current_time=None):
         self.id_counter += 1
 
         # icd_desc = ICD_CATEGORIES[patient_from_app['primary_diagnosis_ICD10AM_chapter']].description
