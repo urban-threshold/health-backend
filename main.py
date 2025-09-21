@@ -196,9 +196,14 @@ def app_factory():
     total_sim_hours = 1
     sim_time_step_minutes = 10
 
-    app.state.hospital_simulator = HospitalSimulator(
-        total_sim_hours, sim_time_step_minutes, start_time=start_time
-    )
+    inpatient_duration_min_hrs = 2
+    inpatient_duration_max_hrs = 14
+    inpatient_duration_min = inpatient_duration_min_hrs * 60
+    inpatient_duration_max = inpatient_duration_max_hrs * 60
+
+    app.state.hospital_simulator = HospitalSimulator(total_sim_hours, sim_time_step_minutes, start_time=start_time, 
+                                            npcs_in_ed=0, npcs_in_wards=8, wards_capacity=10, ed_capacity=10, 
+                                            inpatient_duration_min=inpatient_duration_min, inpatient_duration_max=inpatient_duration_max)
 
     @app.get("/api/dashboard")
     # async def update_hospital_sim() -> HospitalSimulationStruct:
