@@ -15,6 +15,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from ML_models.ed_to_inpatient_ML import EDToInpatientPredictor
 from test import visualize_hospital
 
+class TestReturnStruct(BaseModel):
+    test_string: str
+
 
 class WardStruct(BaseModel):
     name: str
@@ -63,7 +66,7 @@ class IndividualPatientModel(BaseModel):
     requires_inpatient_care: bool
 
 
-def run_simulation(app_state) -> HospitalStateStruct:
+def run_simulation(app_state) -> TestReturnStruct:
     # sim_chunks_raw = hospital_simulator.simulation_chunks
     # sim_chunks = []
     # for chunk in sim_chunks_raw:
@@ -104,47 +107,51 @@ def run_simulation(app_state) -> HospitalStateStruct:
     #     simulation_chunks=sim_chunks,
     # )
 
+########################################################
+    # print(f'--------------------------------')
+    # print(f'Time: {app_state.current_time}')
+    # app_state.hospital_simulator.run_simulation_step(app_state.current_time)
+    # # visualize_hospital(app_state.hospital_simulator, app_state.current_time)
+    # app_state.current_time += datetime.timedelta(minutes=10)
 
-    print(f'--------------------------------')
-    print(f'Time: {app_state.current_time}')
-    app_state.hospital_simulator.run_simulation_step(app_state.current_time)
-    # visualize_hospital(app_state.hospital_simulator, app_state.current_time)
-    app_state.current_time += datetime.timedelta(minutes=10)
+    # # Create ward data dictionary
+    # wards_data = {}
+    # for ward_name, ward in app_state.hospital_simulator.wards_dict.items():
+    #     patients_formatted = []
+    #     for patient in ward.patients:
+    #         patients_formatted.append(get_patient_dict(patient))
 
-    # Create ward data dictionary
-    wards_data = {}
-    for ward_name, ward in app_state.hospital_simulator.wards_dict.items():
-        patients_formatted = []
-        for patient in ward.patients:
-            patients_formatted.append(get_patient_dict(patient))
+    #     wards_data[ward_name] = {
+    #         "name": ward.name,
+    #         "patients": patients_formatted,
+    #         "capacity": ward.capacity,
+    #         "occupied_beds": ward.occupied_beds,
+    #     }
 
-        wards_data[ward_name] = {
-            "name": ward.name,
-            "patients": patients_formatted,
-            "capacity": ward.capacity,
-            "occupied_beds": ward.occupied_beds,
-        }
-
-    # Create chunk data with ED and wards
-    patients_formatted = []
-    for patient in app_state.hospital_simulator.ed.patients:
-        patients_formatted.append(get_patient_dict(patient))
+    # # Create chunk data with ED and wards
+    # patients_formatted = []
+    # for patient in app_state.hospital_simulator.ed.patients:
+    #     patients_formatted.append(get_patient_dict(patient))
     
 
-    ed_data = {
-        "name": app_state.hospital_simulator.ed.name,
-        "patients": patients_formatted,
-        "capacity": app_state.hospital_simulator.ed.capacity,
-        "occupied_beds": app_state.hospital_simulator.ed.occupied_beds,
-    }
+    # ed_data = {
+    #     "name": app_state.hospital_simulator.ed.name,
+    #     "patients": patients_formatted,
+    #     "capacity": app_state.hospital_simulator.ed.capacity,
+    #     "occupied_beds": app_state.hospital_simulator.ed.occupied_beds,
+    # }
 
-    new_data = HospitalStateStruct2(
-        current_time=app_state.current_time,
-        ED=ed_data,
-        wards=wards_data,
-    )
+    # new_data = HospitalStateStruct2(
+    #     current_time=app_state.current_time,
+    #     ED=ed_data,
+    #     wards=wards_data,
+    # )
 
     time.sleep(1)
+
+    new_data = TestReturnStruct(
+        test_string="test"
+    )
 
     return new_data
 
@@ -178,8 +185,10 @@ def app_factory():
     )
 
     @app.get("/api/dashboard")
-    async def update_hospital_sim() -> HospitalSimulationStruct:
-        return run_simulation(app.state, app.state.hospital_simulator)
+    # async def update_hospital_sim() -> HospitalSimulationStruct:
+    #     return run_simulation(app.state)
+    async def update_hospital_sim() -> TestReturnStruct:
+        return run_simulation(app.state)
 
     @app.post("/api/patient")
     async def create_patient(patient: PatientIncomingModel):
