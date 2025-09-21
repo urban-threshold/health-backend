@@ -66,6 +66,14 @@ class PatientGenerator:
         triage_level_desc = get_triage_description(patient_from_app.triageLevel)
         dest_ward = get_category_by_code(patient_from_app.icdCode)['ward']
 
+        random_hours = random.randint(2, 20)
+        rand_stay_hours = random.randint(8, 140)
+
+        IP_arrival_time=self.start_time + datetime.timedelta(hours=random_hours)
+        IP_exit_time=IP_arrival_time + datetime.timedelta(hours=rand_stay_hours)
+
+
+
         return Patient( #TODO
                 id=self.id_counter,
                 name=patient_from_app.name,
@@ -78,8 +86,8 @@ class PatientGenerator:
                 destination_loc=dest_ward,
                 ED_arrival_time=self.start_time,
                 ED_exit_time=self.start_time + datetime.timedelta(minutes=random.randint(10, 30)),
-                IP_arrival_time=None,
-                IP_exit_time=None
+                IP_arrival_time=IP_arrival_time,
+                IP_exit_time=IP_exit_time
             )
 
     def generate_patient(self, current_loc, destination_loc, is_inpatient=False, inpatient_duration=None) -> Patient:
