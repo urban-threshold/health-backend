@@ -73,6 +73,8 @@ class PatientGenerator:
                 triage_level_desc=triage_level_desc,
                 ICD_desc=icd_desc,
                 requires_inpatient_care=requires_inpatient_care,
+                current_loc="ED",
+                destination_loc="ICU",
                 ED_arrival_time=self.start_time,
                 ED_exit_time=self.start_time + datetime.timedelta(minutes=random.randint(10, 30)),
                 IP_arrival_time=None,
