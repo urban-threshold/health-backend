@@ -17,6 +17,10 @@ def get_patient_dict(patient):
         'name': patient.name,
         'sex': patient.sex,
         'age': patient.age,
+        'ED_arrival_time': patient.ED_arrival_time,
+        'ED_exit_time': patient.ED_exit_time,
+        'IP_arrival_time': patient.IP_arrival_time,
+        'IP_exit_time': patient.IP_exit_time,
         'triage_level_desc': get_triage_level(patient.triage_level_desc),
         'ICD_desc': get_category_by_description(patient.ICD_desc)['id'],
         'requires_inpatient_care': patient.requires_inpatient_care
