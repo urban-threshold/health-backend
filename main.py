@@ -66,7 +66,7 @@ class IndividualPatientModel(BaseModel):
     requires_inpatient_care: bool
 
 
-def run_simulation(app_state) -> TestReturnStruct:
+def run_simulation(app_state) -> HospitalSimulationStruct:
     app_state.hospital_simulator.simulation_chunks = [] # reset the chunks
 
     for i in range(10):
@@ -107,12 +107,12 @@ def run_simulation(app_state) -> TestReturnStruct:
         }
         sim_chunks.append(chunk_data)
 
-    # new_data = HospitalSimulationStruct(
-    #     start_time=hospital_simulator.start_time,
-    #     end_time=hospital_simulator.end_time,
-    #     time_step=hospital_simulator.time_step,
-    #     simulation_chunks=sim_chunks,
-    # )
+    new_data = HospitalSimulationStruct(
+        start_time=app_state.hospital_simulator.start_time,
+        end_time=app_state.hospital_simulator.end_time,
+        time_step=app_state.hospital_simulator.time_step,
+        simulation_chunks=sim_chunks,
+    )
 
 ########################################################
     # print(f'--------------------------------')
@@ -156,9 +156,9 @@ def run_simulation(app_state) -> TestReturnStruct:
 
     time.sleep(1)
 
-    new_data = TestReturnStruct(
-        test_string="test"
-    )
+    # new_data = TestReturnStruct(
+    #     test_string="test"
+    # )
 
     # new_data = HospitalSimulationStruct(
     #     start_time=app_state.hospital_simulator.start_time,
@@ -201,7 +201,7 @@ def app_factory():
     @app.get("/api/dashboard")
     # async def update_hospital_sim() -> HospitalSimulationStruct:
     #     return run_simulation(app.state)
-    async def update_hospital_sim() -> TestReturnStruct:
+    async def update_hospital_sim() -> HospitalSimulationStruct:
         return run_simulation(app.state)
 
     @app.post("/api/patient")
