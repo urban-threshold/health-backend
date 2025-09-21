@@ -67,38 +67,45 @@ class IndividualPatientModel(BaseModel):
 
 
 def run_simulation(app_state) -> TestReturnStruct:
-    # sim_chunks_raw = hospital_simulator.simulation_chunks
-    # sim_chunks = []
-    # for chunk in sim_chunks_raw:
-    #     # Create ward data dictionary
-    #     wards_data = {}
-    #     for ward_name, ward in chunk.wards_dict.items():
-    #         patients_formatted = []
-    #         for patient in ward.patients:
-    #             patients_formatted.append(get_patient_dict(patient))
+    app_state.hospital_simulator.simulation_chunks = [] # reset the chunks
 
-    #         wards_data[ward_name] = {
-    #             "name": ward.name,
-    #             "patients": patients_formatted,
-    #             "capacity": ward.capacity,
-    #             "occupied_beds": ward.occupied_beds,
-    #         }
+    for i in range(10):
+        app_state.hospital_simulator.run_simulation_step(app_state.current_time)
+        app_state.current_time += app_state.hospital_simulator.time_step
 
-    #     # Create chunk data with ED and wards
-    #     patients_formatted = []
-    #     for patient in chunk.ed.patients:
-    #         patients_formatted.append(get_patient_dict(patient))
-    #     chunk_data = {
-    #         "current_time": chunk.current_time,
-    #         "ED": {
-    #             "name": chunk.ed.name,
-    #             "patients": patients_formatted,
-    #             "capacity": chunk.ed.capacity,
-    #             "occupied_beds": chunk.ed.occupied_beds,
-    #         },
-    #         "wards": wards_data,
-    #     }
-    #     sim_chunks.append(chunk_data)
+
+    sim_chunks_raw = app_state.hospital_simulator.simulation_chunks
+    sim_chunks = []
+    for chunk in sim_chunks_raw:
+        # Create ward data dictionary
+        wards_data = {}
+        for ward_name, ward in chunk.wards_dict.items():
+            patients_formatted = []
+            for patient in ward.patients:
+                patients_formatted.append(get_patient_dict(patient))
+
+            wards_data[ward_name] = {
+                "name": ward.name,
+                "patients": patients_formatted,
+                "capacity": ward.capacity,
+                "occupied_beds": ward.occupied_beds,
+            }
+
+        # Create chunk data with ED and wards
+        patients_formatted = []
+        for patient in chunk.ed.patients:
+            patients_formatted.append(get_patient_dict(patient))
+        chunk_data = {
+            "current_time": chunk.current_time,
+            "ED": {
+                "name": chunk.ed.name,
+                "patients": patients_formatted,
+                "capacity": chunk.ed.capacity,
+                "occupied_beds": chunk.ed.occupied_beds,
+            },
+            "wards": wards_data,
+        }
+        sim_chunks.append(chunk_data)
 
     # new_data = HospitalSimulationStruct(
     #     start_time=hospital_simulator.start_time,
@@ -152,6 +159,13 @@ def run_simulation(app_state) -> TestReturnStruct:
     new_data = TestReturnStruct(
         test_string="test"
     )
+
+    # new_data = HospitalSimulationStruct(
+    #     start_time=app_state.hospital_simulator.start_time,
+    #     end_time=app_state.hospital_simulator.end_time,
+    #     time_step=app_state.hospital_simulator.time_step,
+    #     simulation_chunks=app_state.hospital_simulator.simulation_chunks,
+    # )
 
     return new_data
 
