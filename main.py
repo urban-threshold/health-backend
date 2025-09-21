@@ -75,6 +75,8 @@ def run_simulation(app_state) -> HospitalSimulationStruct:
 
 
     sim_chunks_raw = app_state.hospital_simulator.simulation_chunks
+    print('sim_chunks_raw', sim_chunks_raw)
+    
     sim_chunks = []
     for chunk in sim_chunks_raw:
         # Create ward data dictionary

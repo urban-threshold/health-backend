@@ -145,6 +145,13 @@ class HospitalSimulator:
             for patient in patients_to_remove:
                 self.ed.remove_patient(patient)
 
+        self.simulation_chunks.append(
+                HospitalState(
+                    current_time=current_time,
+                    wards_dict=self.wards_dict,
+                    ed=self.ed
+                )
+            )
 
 if __name__ == "__main__":
     # Example with specific start time
