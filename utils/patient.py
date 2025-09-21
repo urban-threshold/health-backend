@@ -64,6 +64,7 @@ class PatientGenerator:
         # icd_desc = ICD_CATEGORIES[patient_from_app.icdCode].description
         icd_desc = get_category_by_code(patient_from_app.icdCode)['description']
         triage_level_desc = get_triage_description(patient_from_app.triageLevel)
+        dest_ward = get_category_by_code(patient_from_app.icdCode)['ward']
 
         return Patient( #TODO
                 id=self.id_counter,
@@ -74,7 +75,7 @@ class PatientGenerator:
                 ICD_desc=icd_desc,
                 requires_inpatient_care=requires_inpatient_care,
                 current_loc="ED",
-                destination_loc="ICU",
+                destination_loc=dest_ward,
                 ED_arrival_time=self.start_time,
                 ED_exit_time=self.start_time + datetime.timedelta(minutes=random.randint(10, 30)),
                 IP_arrival_time=None,
@@ -105,7 +106,7 @@ class PatientGenerator:
                 triage_level_desc=triage_desc,
                 ICD_desc=icd_desc,
                 requires_inpatient_care= True,
-                current_loc='ICU',
+                current_loc=current_loc,
                 destination_loc='HOME',
                 ED_arrival_time=None,
                 ED_exit_time=None,
@@ -116,7 +117,8 @@ class PatientGenerator:
         else:
             requires_inpatient_care=random.choice([True, False])
             if requires_inpatient_care:
-                destination_loc=self.determine_ward_for_patient(icd_desc)
+                dest_ward = 'AMU'
+                destination_loc=dest_ward
                 ED_exit_time=self.start_time + datetime.timedelta(minutes=30)
             else:
                 destination_loc='HOME'
