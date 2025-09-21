@@ -87,17 +87,27 @@ def visualize_hospital(hospital_simulator, current_time):
     plt.tight_layout()
     plt.show()
 
-# Main simulation setup
-start_time = "2025-09-21 17:00:00"
-hospital_simulator = HospitalSimulator(1, 10, start_time=start_time)
-current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
 
-print('Initial ED patients:', hospital_simulator.ed.patients)
-print('Press q to close plot and advance to next time step')
+if __name__ == "__main__":
+    # Main simulation setup
+    start_time = "2025-09-21 17:00:00"
+    inpatient_duration_min_hrs = 2
+    inpatient_duration_max_hrs = 14
+    inpatient_duration_min = inpatient_duration_min_hrs * 60
+    inpatient_duration_max = inpatient_duration_max_hrs * 60
 
-while True:
-    print(f'--------------------------------')
-    print(f'Time: {current_time}')
-    hospital_simulator.run_simulation_step(current_time)
-    visualize_hospital(hospital_simulator, current_time)
-    current_time += datetime.timedelta(minutes=10)
+
+    hospital_simulator = HospitalSimulator(1, 10, start_time=start_time, 
+                                            npcs_in_ed=5, npcs_in_wards=10, wards_capacity=10, ed_capacity=10, 
+                                            inpatient_duration_min=inpatient_duration_min, inpatient_duration_max=inpatient_duration_max)
+    current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+
+    print('Initial ED patients:', hospital_simulator.ed.patients)
+    print('Press q to close plot and advance to next time step')
+
+    while True:
+        print(f'--------------------------------')
+        print(f'Time: {current_time}')
+        hospital_simulator.run_simulation_step(current_time)
+        visualize_hospital(hospital_simulator, current_time)
+        current_time += datetime.timedelta(minutes=10)

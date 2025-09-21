@@ -5,19 +5,21 @@ from .triage_levels import get_triage_level
 import random
 
 class Ward: 
-    def __init__(self, name, capacity, occupied_beds, patient_generator, is_ed=False):
+    def __init__(self, name, capacity, occupied_beds, patient_generator, is_ed=False, inpatient_duration_min=10, inpatient_duration_max=100):
         self.name = name
         self.capacity = capacity
         self.patients = []
         self.occupied_beds = occupied_beds
         self.is_ed = is_ed
         self.patient_generator = patient_generator
+        self.inpatient_duration_min = inpatient_duration_min
+        self.inpatient_duration_max = inpatient_duration_max
         self.initialize_ward()
 
     def add_patient(self, patient: Patient, current_time):
         """Add a patient to the ward"""
         patient.IP_arrival_time = current_time
-        patient.IP_exit_time = current_time + timedelta(minutes=random.randint(10, 100))
+        patient.IP_exit_time = current_time + timedelta(minutes=random.randint(self.inpatient_duration_min, self.inpatient_duration_max))
 
         self.patients.append(patient)
         self.occupied_beds = len(self.patients)
@@ -33,7 +35,8 @@ class Ward:
         destination_loc = 'HOME'
 
         for i in range(self.occupied_beds):
-            patient = self.patient_generator.generate_patient(current_loc, destination_loc, is_inpatient=True)
+            inpatient_duration = random.randint(self.inpatient_duration_min, self.inpatient_duration_max)
+            patient = self.patient_generator.generate_patient(current_loc, destination_loc, is_inpatient=True, inpatient_duration=inpatient_duration)
             self.patients.append(patient)
 
     def process_patients(self, current_time) -> Tuple[List[Patient], List[Patient]]:

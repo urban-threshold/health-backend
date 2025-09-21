@@ -79,7 +79,7 @@ class PatientGenerator:
                 IP_exit_time=None
             )
 
-    def generate_patient(self, current_loc, destination_loc, is_inpatient=False) -> Patient:
+    def generate_patient(self, current_loc, destination_loc, is_inpatient=False, inpatient_duration=None) -> Patient:
         """Generate a random patient arriving at the ED"""
         self.id_counter += 1
         # Generate random triage level (weighted towards less urgent)
@@ -108,7 +108,7 @@ class PatientGenerator:
                 ED_arrival_time=None,
                 ED_exit_time=None,
                 IP_arrival_time=self.start_time,
-                IP_exit_time=self.start_time + datetime.timedelta(minutes=random.randint(10, 100))
+                IP_exit_time=self.start_time + datetime.timedelta(minutes=inpatient_duration)
             )
 
         else:

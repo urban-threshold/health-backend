@@ -13,6 +13,7 @@ from utils.triage_levels import get_triage_level
 from utils.ICD import get_category_by_description, get_category_by_code
 from fastapi.middleware.cors import CORSMiddleware
 from ML_models.ed_to_inpatient_ML import EDToInpatientPredictor
+from test import visualize_hospital
 
 
 class WardStruct(BaseModel):
@@ -26,6 +27,11 @@ class HospitalStateStruct(BaseModel):
     current_time: datetime.datetime
     ED: WardStruct
     wards: dict[str, WardStruct]
+
+class HospitalStateStruct2(BaseModel):
+    current_time: datetime.datetime
+    ED: dict
+    wards: dict
 
 
 class HospitalSimulationStruct(BaseModel):
@@ -57,46 +63,88 @@ class IndividualPatientModel(BaseModel):
     requires_inpatient_care: bool
 
 
-def run_simulation(hospital_simulator) -> HospitalSimulationStruct:
-    sim_chunks_raw = hospital_simulator.simulation_chunks
-    sim_chunks = []
-    for chunk in sim_chunks_raw:
-        # Create ward data dictionary
-        wards_data = {}
-        for ward_name, ward in chunk.wards_dict.items():
-            patients_formatted = []
-            for patient in ward.patients:
-                patients_formatted.append(get_patient_dict(patient))
+def run_simulation(app_state) -> HospitalStateStruct:
+    # sim_chunks_raw = hospital_simulator.simulation_chunks
+    # sim_chunks = []
+    # for chunk in sim_chunks_raw:
+    #     # Create ward data dictionary
+    #     wards_data = {}
+    #     for ward_name, ward in chunk.wards_dict.items():
+    #         patients_formatted = []
+    #         for patient in ward.patients:
+    #             patients_formatted.append(get_patient_dict(patient))
 
-            wards_data[ward_name] = {
-                "name": ward.name,
-                "patients": patients_formatted,
-                "capacity": ward.capacity,
-                "occupied_beds": ward.occupied_beds,
-            }
+    #         wards_data[ward_name] = {
+    #             "name": ward.name,
+    #             "patients": patients_formatted,
+    #             "capacity": ward.capacity,
+    #             "occupied_beds": ward.occupied_beds,
+    #         }
 
-        # Create chunk data with ED and wards
+    #     # Create chunk data with ED and wards
+    #     patients_formatted = []
+    #     for patient in chunk.ed.patients:
+    #         patients_formatted.append(get_patient_dict(patient))
+    #     chunk_data = {
+    #         "current_time": chunk.current_time,
+    #         "ED": {
+    #             "name": chunk.ed.name,
+    #             "patients": patients_formatted,
+    #             "capacity": chunk.ed.capacity,
+    #             "occupied_beds": chunk.ed.occupied_beds,
+    #         },
+    #         "wards": wards_data,
+    #     }
+    #     sim_chunks.append(chunk_data)
+
+    # new_data = HospitalSimulationStruct(
+    #     start_time=hospital_simulator.start_time,
+    #     end_time=hospital_simulator.end_time,
+    #     time_step=hospital_simulator.time_step,
+    #     simulation_chunks=sim_chunks,
+    # )
+
+
+    print(f'--------------------------------')
+    print(f'Time: {app_state.current_time}')
+    app_state.hospital_simulator.run_simulation_step(app_state.current_time)
+    # visualize_hospital(app_state.hospital_simulator, app_state.current_time)
+    app_state.current_time += datetime.timedelta(minutes=10)
+
+    # Create ward data dictionary
+    wards_data = {}
+    for ward_name, ward in app_state.hospital_simulator.wards_dict.items():
         patients_formatted = []
-        for patient in chunk.ed.patients:
+        for patient in ward.patients:
             patients_formatted.append(get_patient_dict(patient))
-        chunk_data = {
-            "current_time": chunk.current_time,
-            "ED": {
-                "name": chunk.ed.name,
-                "patients": patients_formatted,
-                "capacity": chunk.ed.capacity,
-                "occupied_beds": chunk.ed.occupied_beds,
-            },
-            "wards": wards_data,
-        }
-        sim_chunks.append(chunk_data)
 
-    new_data = HospitalSimulationStruct(
-        start_time=hospital_simulator.start_time,
-        end_time=hospital_simulator.end_time,
-        time_step=hospital_simulator.time_step,
-        simulation_chunks=sim_chunks,
+        wards_data[ward_name] = {
+            "name": ward.name,
+            "patients": patients_formatted,
+            "capacity": ward.capacity,
+            "occupied_beds": ward.occupied_beds,
+        }
+
+    # Create chunk data with ED and wards
+    patients_formatted = []
+    for patient in app_state.hospital_simulator.ed.patients:
+        patients_formatted.append(get_patient_dict(patient))
+    
+
+    ed_data = {
+        "name": app_state.hospital_simulator.ed.name,
+        "patients": patients_formatted,
+        "capacity": app_state.hospital_simulator.ed.capacity,
+        "occupied_beds": app_state.hospital_simulator.ed.occupied_beds,
+    }
+
+    new_data = HospitalStateStruct2(
+        current_time=app_state.current_time,
+        ED=ed_data,
+        wards=wards_data,
     )
+
+    time.sleep(1)
 
     return new_data
 
@@ -120,6 +168,7 @@ def app_factory():
     app.state.ed_to_inpatient_predictor = EDToInpatientPredictor()
 
     start_time="2025-09-21 17:00:00"
+    app.state.current_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
 
     total_sim_hours = 1
     sim_time_step_minutes = 10
@@ -130,7 +179,7 @@ def app_factory():
 
     @app.get("/api/dashboard")
     async def update_hospital_sim() -> HospitalSimulationStruct:
-        return run_simulation(app.state.hospital_simulator)
+        return run_simulation(app.state, app.state.hospital_simulator)
 
     @app.post("/api/patient")
     async def create_patient(patient: PatientIncomingModel):
