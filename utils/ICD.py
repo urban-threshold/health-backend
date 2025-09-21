@@ -17,13 +17,14 @@ class ICDCategory:
         }
 
 # Main mapping of ICD categories
+icu_str = 'AMU'
 ICD_CATEGORIES = {
     1: ICDCategory(1, "Certain infectious and parasitic diseases", "A0", "AMU" ),
     2: ICDCategory(2, "Neoplasms", "C0", "AMU"),
     3: ICDCategory(3, "Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism", "D5", "AMU"),
     4: ICDCategory(4, "Endocrine, nutritional and metabolic diseases", "E0", "AMU"),
     5: ICDCategory(5, "Mental and behavioural disorders", "F0", "AMU"),
-    6: ICDCategory(6, "Diseases of the nervous system", "G0", "ICU"),
+    6: ICDCategory(6, "Diseases of the nervous system", "G0", icu_str),
     7: ICDCategory(7, "Diseases of the eye and adnexa", "H0", "SSU"),
     8: ICDCategory(8, "Diseases of the ear and mastoid process", "H6", "SSU"),
     9: ICDCategory(9, "Diseases of the circulatory system", "I0", "CCU"),
@@ -35,10 +36,10 @@ ICD_CATEGORIES = {
     15: ICDCategory(15, "Pregnancy, childbirth and the puerperium", "O0", "AMU"),
     16: ICDCategory(16, "Certain conditions originating in the perinatal period", "P0", "AMU"),
     17: ICDCategory(17, "Congenital malformations, deformations and chromosomal abnormalities", "Q0", "AMU"),
-    18: ICDCategory(18, "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified", "R0", "ICU"),
+    18: ICDCategory(18, "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified", "R0", icu_str),
     19: ICDCategory(19, "Injury, poisoning and certain other consequences of external causes", "S0", "SW"),
-    20: ICDCategory(20, "External causes of morbidity and mortality", "U5", "ICU"),
-    21: ICDCategory(21, "Factors influencing health status and contact with health services", "Z0", "ICU"),
+    20: ICDCategory(20, "External causes of morbidity and mortality", "U5", icu_str),
+    21: ICDCategory(21, "Factors influencing health status and contact with health services", "Z0", icu_str),
     22: ICDCategory(22, "Codes for special purposes", "U0", "SSU"),
 }
 
